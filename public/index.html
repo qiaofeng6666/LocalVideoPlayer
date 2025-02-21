@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -60,3 +61,67 @@
     </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>视频播放器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .video-list {
+            margin-bottom: 20px;
+        }
+        .video-item {
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 5px;
+        }
+        .video-player {
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>视频播放器</h1>
+    <div class="video-list">
+        <h2>视频列表</h2>
+        <div id="videoItems"></div>
+    </div>
+    <div class="video-player">
+        <video id="videoPlayer" controls></video>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const videoItemsContainer = document.getElementById('videoItems');
+            const videoPlayer = document.getElementById('videoPlayer');
+
+            // 获取视频列表
+            fetch('/api/videos')
+                .then(response => response.json())
+                .then(videos => {
+                    videos.forEach(videoPath => {
+                        const videoItem = document.createElement('div');
+                        videoItem.className = 'video-item';
+                        videoItem.textContent = decodeURIComponent(videoPath.split('/').pop()); // 显示文件名
+                        videoItem.onclick = () => playVideo(videoPath);
+                        videoItemsContainer.appendChild(videoItem);
+                    });
+                })
+                .catch(err => console.error('获取视频列表失败:', err));
+
+            function playVideo(videoPath) {
+                videoPlayer.src = videoPath;
+                videoPlayer.load(); // 加载新的视频源
+                videoPlayer.play();
+            }
+        });
+    </script>
+</body>
+</html>
+>>>>>>> 3ffc43c9356f8ada481788029bffb7f2ddd5a5fa
