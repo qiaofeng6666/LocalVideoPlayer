@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一键返回顶部按钮</title>
+    <style>
+        /* 返回顶部按钮的基本样式 */
+        #backToTopBtn {
+            display: none; /* 默认隐藏按钮 */
+            position: fixed; /* 固定定位 */
+            bottom: 20px; /* 距离底部的距离 */
+            right: 20px; /* 距离右侧的距离 */
+            padding: 10px 20px;
+            background-color: #007bff; /* 按钮背景颜色 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.8; /* 初始透明度 */
+            transition: opacity 0.3s ease; /* 平滑过渡效果 */
+        }
+
+        /* 鼠标悬停时增加透明度 */
+        #backToTopBtn:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面内容 -->
+    <div style="height: 2000px;">
+        <h1>向下滚动查看更多内容</h1>
+    </div>
+
+    <!-- 返回顶部按钮 -->
+    <button id="backToTopBtn" title="返回顶部">↑</button>
+
+    <script>
+        // 获取返回顶部按钮
+        const backToTopBtn = document.getElementById('backToTopBtn');
+
+        // 监听滚动事件，当用户滚动超过一定距离时显示按钮
+        window.addEventListener('scroll', () => {
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                backToTopBtn.style.display = 'block';
+            } else {
+                backToTopBtn.style.display = 'none';
+            }
+        });
+
+        // 点击按钮时平滑滚动到顶部
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth' // 平滑滚动
+            });
+        });
+    </script>
+</body>
+</html>
