@@ -1,14 +1,5 @@
-<<<<<<< HEAD
 node app.js
 
 npm install pm2 -g
 pm2 start app.js
 pm2 startup
-=======
-node app.js
-
-npm install pm2 -g
-pm2 start app.js
-pm2 startup
->>>>>>> 3ffc43c9356f8ada481788029bffb7f2ddd5a5fa
-pm2 save

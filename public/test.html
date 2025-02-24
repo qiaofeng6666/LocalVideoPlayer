@@ -1,13 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>一键返回顶部按钮</title>
-    <style>
-        /* 返回顶部按钮的基本样式 */
-        #backToTopBtn {
-            display: none; /* 默认隐藏按钮 */
+    <title>视频播放器</title>
+    <style id="theme-style">
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .video-list {
+            margin-bottom: 20px;
+        }
+
+        .video-item {
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 5px;
+        }
+
+        /* 白天模式样式 */
+        body.day {
+            background-color: white;
+            color: black;
+        }
+
+        /* 黑夜模式样式 */
+        body.night {
+            background-color: #333;
+            color: white;
+        }
+
+        /* 按钮样式 */
+        .mode-toggle {
+            /* position: fixed; */
+            position: absolute;
+            top: 10px; /* 距离顶部的距离 */
+            right: 10px; /* 距离右侧的距离 */
+            padding: 10px 20px;
+            background-color: #007bff; /* 按钮背景颜色 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .mode-toggle:hover {
+            background-color: #0056b3; /* 鼠标悬停时的背景颜色 */
+        }
+
+        /* 视频播放器样式 */
+        .video-player {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* 使子元素从父容器顶部开始排列 */
+            height: auto; /* 根据子元素的内容自动调整高度 */
+            margin-top: 50px; /* 避免被固定按钮遮挡 */
+        }
+
+        video {
+            width: 90%; /* 根据需要调整宽度 */
+            max-width: 800px; /* 最大宽度 */
+            max-height: 100%; /* 最大高度 */
+        }
+
+        /* 滚到底部按钮的基本样式 */
+        #scrollToBtm {
+            display: block; /* 默认显示按钮 */
             position: fixed; /* 固定定位 */
             bottom: 20px; /* 距离底部的距离 */
             right: 20px; /* 距离右侧的距离 */
@@ -22,22 +83,117 @@
             transition: opacity 0.3s ease; /* 平滑过渡效果 */
         }
 
+        /* 返回顶部按钮的基本样式 */
+        #backToTopBtn {
+            display: none; /* 默认显示按钮 */
+            position: fixed; /* 固定定位 */
+            bottom: 65px; /* 距离底部的距离 */
+            right: 20px; /* 距离右侧的距离 */
+            padding: 10px 20px;
+            background-color: #007bff; /* 按钮背景颜色 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.8; /* 初始透明度 */
+            transition: opacity 0.3s ease; /* 平滑过渡效果 */
+        }
+
         /* 鼠标悬停时增加透明度 */
-        #backToTopBtn:hover {
+        .UpDownBtm:hover {
             opacity: 1;
+        }
+
+        /* 搜索基本样式 */
+        .videoAndSearch{
+            display: flex;
+            font-size: 24px;
+        }
+        .search-container {
+            display: flex;
+            justify-content: flex-end; /* 使内容靠右对齐 */
+            margin-left: auto; /* 强制容器靠右 */
+            align-items: center; /* 垂直居中对齐 */
+            width: 210px;
+            right: 0; /* 靠右对齐 */
+            top: 20px; /* 根据需要调整顶部距离 */
+        }
+        .search-container > * {
+            margin: 5px 1px;
+        }
+        input[type=text] {
+            padding: 5px;
+            width: 50%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+        .result-message {
+            font-weight: bold;
+            display: none;
+        }
+        .error-message {
+            color: red;
+            display: none;
         }
     </style>
 </head>
-<body>
-    <!-- 页面内容 -->
-    <div style="height: 2000px;">
-        <h1>向下滚动查看更多内容</h1>
-    </div>
 
-    <!-- 返回顶部按钮 -->
-    <button id="backToTopBtn" title="返回顶部">↑</button>
+<body class="night"><!-- 默认黑天模式 -->
+    <!-- 切换模式按钮 -->
+    <button class="mode-toggle" onclick="toggleNightMode()">🔆</button>
 
     <script>
+        function toggleNightMode() {
+            const isNight = document.body.classList.contains('night');
+            document.body.className = isNight ? 'day' : 'night';
+            // 更新按钮文本
+            document.querySelector('.mode-toggle').textContent = isNight ? '🌙' : '🔆';
+        }
+    </script>
+    <!-- 标题 -->
+    <h1 style="text-align: center;">视频播放器</h1>
+    <!-- 视频播放器 -->
+    <div class="video-player">
+        <video id="videoPlayer" controls></video>
+    </div>
+    <!-- 视频列表 -->
+    <div class="video-list">
+        <div class="videoAndSearch">
+            <div id="videosName">视频列表</div>
+            <div class="search-container">
+                <!-- 结果信息显示在搜索框前面 -->
+                <div class="result-message" id="resultMessage"></div>
+                <div class="error-message" id="errorMessage">请输入搜索关键词。</div>
+                <input type="text" id="searchText" placeholder="请输入搜索关键词...">
+                <button onclick="findText()">搜索</button>
+            </div>
+        </div>
+        <div id="videoItems"></div>
+    </div>
+    <!-- 返回顶部按钮 -->
+    <button id="backToTopBtn" class="UpDownBtm" title="返回顶部">↑</button>
+    <!-- 滚到底部按钮 -->
+    <button id="scrollToBtm" class="UpDownBtm" title="滚到底部">↓</button>
+
+    <!-- 滚顶按钮 -->
+    <script>
+        // 获取滚到底部按钮
+        const scrollToBtm = document.getElementById('scrollToBtm');
         // 获取返回顶部按钮
         const backToTopBtn = document.getElementById('backToTopBtn');
 
@@ -57,6 +213,103 @@
                 behavior: 'smooth' // 平滑滚动
             });
         });
+
+        // 点击按钮时平滑滚动到底部
+        scrollToBtm.addEventListener('click', () => {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth' // 平滑滚动
+            });
+        });
     </script>
-</body>
+
+    <!-- 获取视频 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const videoItemsContainer = document.getElementById('videoItems');
+            const videoPlayer = document.getElementById('videoPlayer');
+
+            // 获取视频列表
+            fetch('/api/videos')
+                .then(response => response.json())
+                .then(videos => {
+                    videos.forEach(videoPath => {
+                        const videoItem = document.createElement('div');
+                        videoItem.className = 'video-item';
+                        videoItem.textContent = decodeURIComponent(videoPath.split('/').pop()); // 显示文件名
+                        videoItem.onclick = () => playVideo(videoPath);
+                        videoItemsContainer.appendChild(videoItem);
+                    });
+                    updateCount();
+                })
+                .catch(err => console.error('获取视频列表失败:', err));
+
+            function playVideo(videoPath) {
+                videoPlayer.src = videoPath;
+                videoPlayer.load(); // 加载新的视频源
+                videoPlayer.play();
+            }
+
+        });
+
+        function updateCount() {
+            const parent = document.getElementById('videoItems');
+            const childDivs = parent.querySelectorAll(':scope > div'); // 获取所有直接子div
+            document.getElementById('videosName').innerText = '视频列表：' + childDivs.length;
+            console.log(childDivs.length);
+        }
+    </script>
+
+    <!-- 搜索 -->
+    <script>
+        function findText() {
+            // 获取用户输入的搜索词
+            var searchText = document.getElementById('searchText').value.trim();
+            var resultMessage = document.getElementById('resultMessage');
+
+            // 显示错误消息或执行搜索逻辑
+            if (searchText === '') {
+                resultMessage.style.display = 'none';
+                return;
+            } else {
+                errorMessage.style.display = 'none';
+            }
+
+            // 获取目标 div 元素
+            var videoItemsDiv = document.getElementById('videoItems');
+
+            // 移除之前的高亮显示
+            var highlightedElements = videoItemsDiv.querySelectorAll(".highlight");
+            highlightedElements.forEach(function (item) {
+                item.outerHTML = item.innerHTML.replace(/<span class="highlight">|<\/span>/g, '');
+            });
+
+            // 查找并高亮匹配的文本 - 仅对特定 div 中的文本进行操作
+            var pattern = new RegExp(searchText, "gi");
+            var matchCount = 0;
+
+            videoItemsDiv.querySelectorAll('*').forEach(function (element) {
+                if (element.childNodes.length && element.tagName !== 'SCRIPT') { // 确保不处理 script 标签
+                    var originalText = element.innerHTML;
+                    var modifiedText = originalText.replace(pattern, function (match) {
+                        matchCount++;
+                        return '<span class="highlight">' + match + '</span>';
+                    });
+                    element.innerHTML = modifiedText;
+                }
+            });
+
+            // 显示结果信息
+            if (matchCount > 0) {
+                resultMessage.textContent = `${matchCount}`;
+                resultMessage.style.color = 'green';
+            } else {
+                resultMessage.textContent = '无';
+                resultMessage.style.color = 'red';
+            }
+            resultMessage.style.display = 'block';
+        }
+    </script>
+    </body>
+
 </html>
