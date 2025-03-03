@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon/M.ico" type="image/x-icon">
     <title>视频播放器与列表</title>
     <style>
         body, html {
@@ -34,6 +35,40 @@
             bottom: 10px; /* 距离底部的距离 */
             right: 10px; /* 距离右侧的距离 */
             padding: 10px 10px;
+            background-color: #007bff; /* 按钮背景颜色 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.8; /* 初始透明度 */
+            transition: opacity 0.3s ease; /* 平滑过渡效果 */
+        }
+
+        /* 滚到底部按钮的基本样式 */
+        #scrollToBtm {
+            display: block; /* 默认显示按钮 */
+            position: fixed; /* 固定定位 */
+            bottom: 55px; /* 距离底部的距离 */
+            right: 10px; /* 距离右侧的距离 */
+            padding: 8px 12px;
+            background-color: #007bff; /* 按钮背景颜色 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.8; /* 初始透明度 */
+            transition: opacity 0.3s ease; /* 平滑过渡效果 */
+        }
+
+        /* 返回顶部按钮的基本样式 */
+        #backToTopBtn {
+            display: none; /* 默认显示按钮 */
+            position: fixed; /* 固定定位 */
+            bottom: 100px; /* 距离底部的距离 */
+            right: 10px; /* 距离右侧的距离 */
+            padding: 8px 12px;
             background-color: #007bff; /* 按钮背景颜色 */
             color: white;
             border: none;
@@ -174,6 +209,44 @@
         <div id="videoItems"></div>
     </div>
 
+    <!-- 返回顶部按钮 -->
+    <button id="backToTopBtn" class="UpDownBtm" title="返回顶部">↑</button>
+    <!-- 滚到底部按钮 -->
+    <button id="scrollToBtm" class="UpDownBtm" title="滚到底部">↓</button>
+
+    <!-- 滚顶按钮 -->
+    <script>
+        // 获取滚到底部按钮
+        const scrollToBtm = document.getElementById('scrollToBtm');
+        // 获取返回顶部按钮
+        const backToTopBtn = document.getElementById('backToTopBtn');
+
+        // 监听滚动事件，当用户滚动超过一定距离时显示按钮
+        window.addEventListener('scroll', () => {
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                backToTopBtn.style.display = 'block';
+            } else {
+                backToTopBtn.style.display = 'none';
+            }
+        });
+
+        // 点击按钮时平滑滚动到顶部
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth' // 平滑滚动
+            });
+        });
+
+        // 点击按钮时平滑滚动到底部
+        scrollToBtm.addEventListener('click', () => {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth' // 平滑滚动
+            });
+        });
+    </script>   
+
     <!-- 获取视频 -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -266,24 +339,26 @@
         // 获取video元素
         var vid = document.getElementById("main-video");
 
+        // 记录初始播放速度
+        var defaultSpeed = vid.playbackRate;
+        
         // 阻止长按视频时的默认菜单
         vid.addEventListener('contextmenu', function(event) {
             event.preventDefault();
         });
-        
-        // 记录初始播放速度
-        var defaultSpeed = vid.playbackRate;
-        
+
         // 监听触摸开始事件
         vid.addEventListener('touchstart', function() {
-          // 设置播放速度为3x
-          vid.playbackRate = 3;
+            // 记录初始播放速度
+            defaultSpeed = vid.playbackRate;
+            // 设置播放速度为3x
+            vid.playbackRate = 3;
         });
         
         // 监听触摸结束事件
         vid.addEventListener('touchend', function() {
-        // 恢复初始播放速度
-        vid.playbackRate = defaultSpeed;
+            // 恢复初始播放速度
+            vid.playbackRate = defaultSpeed;
         });
     </script>
 </body>
