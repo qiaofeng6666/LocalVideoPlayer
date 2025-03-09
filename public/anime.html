@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/favicon/A.ico" type="image/x-icon">
-    <title>视频播放器与列表</title>
+    <title>动漫播放器</title>
     <style>
         body, html {
             margin: 0;
@@ -16,72 +16,81 @@
             flex-direction: column;
         }
 
-        /* 白天模式样式 */
-        body.day {
-            background-color: white;
-            color: black;
+        /* 默认（深色）主题样式 */
+        :root {
+            --background-color: #333;
+            --text-color: white;
+            --highlight-background-color: gray;
+            --highlight-text-color: #00AEEC;
         }
 
-        /* 黑夜模式样式 */
-        body.night {
-            background-color: #333;
-            color: white;
+        /* 浅色主题样式 */
+        :root.theme {
+            --background-color: white;
+            --text-color: #333;
+            --highlight-background-color: white;
+            --highlight-text-color: #00AEEC;
         }
 
-        /* 按钮样式 */
-        .mode-toggle {
-            display: block; /* 默认显示按钮 */
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: Arial, sans-serif;
+        }
+
+        .video-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center; /* 垂直居中对齐 */
+            transition: all 0.3s ease; /* 平滑过渡效果 */
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        /* 点击后的样式 */
+        .clicked {
+            background-color: var(--highlight-background-color); /* 使用变量 */
+            color: var(--highlight-text-color); /* 使用变量 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+        }
+
+        /* 图片样式 */
+        .icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .button-container {
+            display: flex; /* 默认显示按钮 */
             position: fixed; /* 固定定位 */
-            bottom: 10px; /* 距离底部的距离 */
-            right: 10px; /* 距离右侧的距离 */
-            padding: 10px 10px;
+            bottom: 5px; /* 距离底部的距离 */
+            right: 5px; /* 距离右侧的距离 */
+            flex-direction: column-reverse; /* 使内容从下往上排列 */
+            justify-content: flex-end; /* 确保内容对齐到容器底部 */
+            gap: 5px; /* 按钮之间的间距 */
+        }
+
+        .button {
+            width: 40px; /* 固定宽度 */
+            height: 40px; /* 固定高度 */
             background-color: #007bff; /* 按钮背景颜色 */
             color: white;
             border: none;
+            cursor: pointer; /* 当鼠标悬停在按钮上时，光标会变成手型，提示用户这是一个可点击的按钮 */
             border-radius: 5px;
-            cursor: pointer;
             font-size: 16px;
             opacity: 0.8; /* 初始透明度 */
             transition: opacity 0.3s ease; /* 平滑过渡效果 */
         }
 
-        /* 滚到底部按钮的基本样式 */
-        #scrollToBtm {
-            display: block; /* 默认显示按钮 */
-            position: fixed; /* 固定定位 */
-            bottom: 55px; /* 距离底部的距离 */
-            right: 10px; /* 距离右侧的距离 */
-            padding: 8px 12px;
-            background-color: #007bff; /* 按钮背景颜色 */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            opacity: 0.8; /* 初始透明度 */
-            transition: opacity 0.3s ease; /* 平滑过渡效果 */
-        }
-
-        /* 返回顶部按钮的基本样式 */
-        #backToTopBtn {
-            display: none; /* 默认显示按钮 */
-            position: fixed; /* 固定定位 */
-            bottom: 100px; /* 距离底部的距离 */
-            right: 10px; /* 距离右侧的距离 */
-            padding: 8px 12px;
-            background-color: #007bff; /* 按钮背景颜色 */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            opacity: 0.8; /* 初始透明度 */
-            transition: opacity 0.3s ease; /* 平滑过渡效果 */
-        }
-
-        .mode-toggle:hover {
+        .button:hover {
             background-color: #0056b3; /* 鼠标悬停时的背景颜色 */
         }
+
         .video-container {
             position: fixed;
             background-color: #333;
@@ -176,17 +185,58 @@
         }
     </style>
 </head>
-<body class="night"><!-- 默认黑天模式 -->
-    <!-- 切换模式按钮 -->
-    <button class="mode-toggle" onclick="toggleNightMode()">🔆</button>
+
+<body>
+    <div class="button-container">
+        <!-- 切换模式按钮 -->
+        <button class="button" id="themeToggle" onclick="toggleTheme()">🔆</button>
+        <!-- 滚到底部按钮 -->
+        <button class="button" id="scrollToBtm" class="UpDownBtm" title="滚到底部">↓</button>
+        <!-- 返回顶部按钮 -->
+        <button class="button" id="backToTopBtn" class="UpDownBtm" title="返回顶部" style="display: none;">↑</button>     
+    </div>
 
     <script>
-        function toggleNightMode() {
-            const isNight = document.body.classList.contains('night');
-            document.body.className = isNight ? 'day' : 'night';
-            // 更新按钮文本
-            document.querySelector('.mode-toggle').textContent = isNight ? '🌙' : '🔆';
+        // 切换主题函数
+        function toggleTheme() {
+            var themeToggle = document.getElementById('themeToggle');
+            document.documentElement.classList.toggle('theme');
+            if (document.documentElement.classList.contains('theme')) {
+                themeToggle.textContent = '🌙';
+            } else {
+                themeToggle.textContent = '🔆';
+            }
         }
+        document.addEventListener('DOMContentLoaded', function() {
+            // 使用事件委托绑定点击事件到父级元素
+            document.body.addEventListener('click', function(event) {
+                if (event.target.closest('.video-item')) {
+                    var item = event.target.closest('.video-item');
+
+                    // 移除所有项目的特殊样式和图标
+                    document.querySelectorAll('.video-item').forEach(function(otherItem) {
+                        otherItem.classList.remove('clicked');
+                        otherItem.classList.add('default'); // 还原默认样式
+
+                    // 移除之前可能存在的图片元素
+                    if (otherItem.querySelector('.icon')) {
+                        otherItem.removeChild(otherItem.querySelector('.icon'));
+                    }
+                });
+
+                // 给当前点击的项目添加特殊样式和图标
+                item.classList.remove('default');
+                item.classList.add('clicked');
+
+                // 创建并插入图片元素
+                var img = document.createElement('img');
+                img.src = '/asserts/playing.gif';
+                img.alt = 'Playing Icon';
+                img.className = 'icon';
+                item.insertBefore(img, item.firstChild);
+                }
+            });
+        });
     </script>
 
     <!-- 视频播放器 -->
@@ -208,11 +258,6 @@
         </div>
         <div id="videoItems"></div>
     </div>
-
-    <!-- 返回顶部按钮 -->
-    <button id="backToTopBtn" class="UpDownBtm" title="返回顶部">↑</button>
-    <!-- 滚到底部按钮 -->
-    <button id="scrollToBtm" class="UpDownBtm" title="滚到底部">↓</button>
 
     <!-- 滚顶按钮 -->
     <script>
@@ -339,24 +384,26 @@
         // 获取video元素
         var vid = document.getElementById("main-video");
 
+        // 记录初始播放速度
+        var defaultSpeed = vid.playbackRate;
+        
         // 阻止长按视频时的默认菜单
         vid.addEventListener('contextmenu', function(event) {
             event.preventDefault();
         });
-        
-        // 记录初始播放速度
-        var defaultSpeed = vid.playbackRate;
-        
+
         // 监听触摸开始事件
         vid.addEventListener('touchstart', function() {
-          // 设置播放速度为3x
-          vid.playbackRate = 3;
+            // 记录初始播放速度
+            defaultSpeed = vid.playbackRate;
+            // 设置播放速度为3x
+            vid.playbackRate = 3;
         });
         
         // 监听触摸结束事件
         vid.addEventListener('touchend', function() {
-        // 恢复初始播放速度
-        vid.playbackRate = defaultSpeed;
+            // 恢复初始播放速度
+            vid.playbackRate = defaultSpeed;
         });
     </script>
 </body>
