@@ -57,7 +57,7 @@
         .button-container {
             display: flex; /* 默认显示按钮 */
             position: fixed; /* 固定定位 */
-            bottom: 5px; /* 距离底部的距离 */
+            bottom: 45px; /* 距离底部的距离 */
             right: 5px; /* 距离右侧的距离 */
             flex-direction: column-reverse; /* 使内容从下往上排列 */
             justify-content: flex-end; /* 确保内容对齐到容器底部 */
@@ -173,6 +173,38 @@
             color: red;
             display: none;
         }
+
+        /* 进度条控制 */
+        input[type=range] {
+            width: 95%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed; /* 固定定位 */
+            bottom: 0; /* 固定在屏幕底部 */
+            left: 0;
+            right: 0;
+            background-color: var(--background-color);
+            padding: 5px;
+            border-top: 1px solid #ccc;
+            z-index: 1000; /* 确保在其他内容之上 */
+        }
+
+        .controls button {
+            padding: 2px;
+            font-size: 24px; /* 增大字体以确保符号清晰可见 */
+            font-weight: bold; /* 加粗字体 */
+            cursor: pointer;
+            border: none; /* 去掉按钮边框 */
+            background-color: transparent; /* 设置背景透明 */
+        }
+
+        .controls button:hover {
+            background-color: #ddd; /* 鼠标悬停时改变背景颜色 */
+        }
     </style>
 </head>
 
@@ -180,6 +212,8 @@
     <div class="button-container">
         <!-- 切换模式按钮 -->
         <button class="button" id="themeToggle" onclick="toggleTheme()">🔆</button>
+        <!-- 速度切换按钮 -->
+        <button class="button" id="speedBtn">1x</button>
         <!-- 滚到底部按钮 -->
         <button class="button" id="scrollToBtm" class="UpDownBtm" title="滚到底部">↓</button>
         <!-- 返回顶部按钮 -->
@@ -249,6 +283,95 @@
         <div id="videoItems"></div>
     </div>
 
+    <div class="controls">
+        <button id="rewindBtn"> ⏪ </button>
+        <input type="range" id="seekBar" min="0" max="100" value="0">
+        <button id="fastForwardBtn"> ⏩ </button>
+    </div>
+
+    <!-- 进度条控制 -->
+    <script>
+        var video = document.getElementById('main-video');
+        var seekBar = document.getElementById('seekBar');
+        var rewindBtn = document.getElementById('rewindBtn');
+        var fastForwardBtn = document.getElementById('fastForwardBtn');
+        var speedBtn = document.getElementById('speedBtn');
+
+        // 更新进度条
+        function updateSeekBar() {
+            if (video.duration) {
+                var progress = (video.currentTime / video.duration) * 100;
+                seekBar.value = progress;
+            }
+        }
+
+        // 监听进度条输入事件（实时更新）
+        seekBar.addEventListener('input', function() {
+            var time = (seekBar.value / 100) * video.duration;
+            video.currentTime = time;
+        });
+
+        // 监听进度条变更事件（用户释放鼠标后更新）
+        seekBar.addEventListener('change', function() {
+            var time = (seekBar.value / 100) * video.duration;
+            video.currentTime = time;
+        });
+
+        // 快退按钮点击事件
+        rewindBtn.addEventListener('click', function() {
+            video.currentTime = Math.max(video.currentTime - 3, 0);
+        });
+
+        // 快进按钮点击事件
+        fastForwardBtn.addEventListener('click', function() {
+            video.currentTime = Math.min(video.currentTime + 3, video.duration);
+        });
+
+        // 设置播放速度
+        let currentSpeedIndex = 0;
+        const speeds = [1.0, 2.0, 3.0];
+        let savedPlaybackRate = speeds[currentSpeedIndex]; // 保存当前播放速度
+
+        // 切换视频时重置进度条和播放速度
+        function resetSeekBarAndSpeed() {
+            // 在新视频加载完成后恢复播放速度
+            video.addEventListener('loadeddata', function() {
+                video.playbackRate = savedPlaybackRate;
+                speedBtn.textContent = `${savedPlaybackRate}x`;
+                video.play(); // 自动播放新视频
+            }, { once: true });
+        }
+
+        // 设置播放速度
+        function setPlaybackSpeed(index) {
+            currentSpeedIndex = index;
+            video.playbackRate = speeds[currentSpeedIndex];
+            speedBtn.textContent = `${speeds[currentSpeedIndex]}x`;
+        }
+
+        speedBtn.addEventListener('click', function() {
+            currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
+            setPlaybackSpeed(currentSpeedIndex);
+        });
+
+        // 页面加载时设置默认播放速度
+        window.onload = function() {
+            setPlaybackSpeed(0); // 默认设置为1x
+        };
+
+        // 监听播放速度变化并更新按钮文本
+        video.addEventListener('ratechange', function() {
+            const currentRate = video.playbackRate;
+            for (let i = 0; i < speeds.length; i++) {
+                if (speeds[i] === currentRate) {
+                    currentSpeedIndex = i;
+                    break;
+                }
+            }
+            speedBtn.textContent = `${currentRate}x`;
+        });
+    </script>
+
     <!-- 滚顶按钮 -->
     <script>
         // 获取滚到底部按钮
@@ -304,9 +427,11 @@
                 .catch(err => console.error('获取视频列表失败:', err));
 
             function playVideo(videoPath) {
+                savedPlaybackRate = speeds[currentSpeedIndex]; // 保存当前播放速度
                 videoPlayer.src = videoPath;
                 videoPlayer.load(); // 加载新的视频源
                 videoPlayer.play();
+                resetSeekBarAndSpeed();
             }
 
         });
