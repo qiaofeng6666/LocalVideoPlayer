@@ -212,6 +212,8 @@
     <div class="button-container">
         <!-- 切换模式按钮 -->
         <button class="button" id="themeToggle" onclick="toggleTheme()">🔆</button>
+        <!-- 切换视频按钮 -->
+        <button class="button" id="switchVideo" onclick="switchVideo()">⚪</button>
         <!-- 速度切换按钮 -->
         <button class="button" id="speedBtn">1x</button>
         <!-- 滚到底部按钮 -->
@@ -261,6 +263,79 @@
                 }
             });
         });
+
+        // 切换视频类型函数
+        function switchVideo() {
+            var switchVideo = document.getElementById('switchVideo');
+            if (switchVideo.textContent == "⚪") {
+                switchVideo.textContent = "🔴";
+                clearVideoItems();
+
+                const videoItemsContainer = document.getElementById('videoItems');
+                const videoPlayer = document.getElementById('main-video');
+
+                // 获取视频列表
+                fetch('/api/anime')
+                    .then(response => response.json())
+                    .then(videos => {
+                        videos.forEach(videoPath => {
+                            const videoItem = document.createElement('div');
+                            videoItem.className = 'video-item';
+                            videoItem.textContent = decodeURIComponent(videoPath.split('/').pop()); // 显示文件名
+                            videoItem.onclick = () => playVideo(videoPath);
+                            videoItemsContainer.appendChild(videoItem);
+                        });
+                        updateCount();
+                    })
+                    .catch(err => console.error('获取视频列表失败:', err));
+
+                function playVideo(videoPath) {
+                    savedPlaybackRate = speeds[currentSpeedIndex]; // 保存当前播放速度
+                    videoPlayer.src = videoPath;
+                    videoPlayer.load(); // 加载新的视频源
+                    videoPlayer.play();
+                    resetSeekBarAndSpeed();
+                }
+            } else {
+                switchVideo.textContent = "⚪";
+                clearVideoItems();
+
+                const videoItemsContainer = document.getElementById('videoItems');
+                const videoPlayer = document.getElementById('main-video');
+
+                // 获取视频列表
+                fetch('/api/videos')
+                    .then(response => response.json())
+                    .then(videos => {
+                        videos.forEach(videoPath => {
+                            const videoItem = document.createElement('div');
+                            videoItem.className = 'video-item';
+                            videoItem.textContent = decodeURIComponent(videoPath.split('/').pop()); // 显示文件名
+                            videoItem.onclick = () => playVideo(videoPath);
+                            videoItemsContainer.appendChild(videoItem);
+                        });
+                        updateCount();
+                    })
+                    .catch(err => console.error('获取视频列表失败:', err));
+
+                function playVideo(videoPath) {
+                    savedPlaybackRate = speeds[currentSpeedIndex]; // 保存当前播放速度
+                    videoPlayer.src = videoPath;
+                    videoPlayer.load(); // 加载新的视频源
+                    videoPlayer.play();
+                    resetSeekBarAndSpeed();
+                }
+            }
+        }
+
+        // 定义清空函数
+        function clearVideoItems() {
+            // 获取目标 div 元素
+            var videoItemsDiv = document.getElementById("videoItems");
+
+            // 清除 div 内的所有内容
+            videoItemsDiv.innerHTML = '';
+        }
     </script>
 
     <!-- 视频播放器 -->
@@ -285,7 +360,7 @@
 
     <div class="controls">
         <button id="rewindBtn"> ⏪ </button>
-        <input type="range" id="seekBar" min="0" max="100" value="0">
+        <input type="range" id="seekBar" value="0" step="any">
         <button id="fastForwardBtn"> ⏩ </button>
     </div>
 
@@ -297,24 +372,24 @@
         var fastForwardBtn = document.getElementById('fastForwardBtn');
         var speedBtn = document.getElementById('speedBtn');
 
-        // 更新进度条
-        function updateSeekBar() {
-            if (video.duration) {
-                var progress = (video.currentTime / video.duration) * 100;
-                seekBar.value = progress;
-            }
-        }
+        // 设置视频总时长并初始化进度条
+        video.addEventListener('loadedmetadata', function() {
+            seekBar.max = video.duration; // 设置进度条的最大值为视频总时长
+        });
+
+        // 更新滑动条位置
+        video.addEventListener('timeupdate', function() {
+            seekBar.value = video.currentTime; // 直接使用当前时间作为进度条的值
+        });
 
         // 监听进度条输入事件（实时更新）
         seekBar.addEventListener('input', function() {
-            var time = (seekBar.value / 100) * video.duration;
-            video.currentTime = time;
+            video.currentTime = seekBar.value;
         });
 
         // 监听进度条变更事件（用户释放鼠标后更新）
         seekBar.addEventListener('change', function() {
-            var time = (seekBar.value / 100) * video.duration;
-            video.currentTime = time;
+            video.currentTime = seekBar.value;
         });
 
         // 快退按钮点击事件
@@ -334,6 +409,8 @@
 
         // 切换视频时重置进度条和播放速度
         function resetSeekBarAndSpeed() {
+            // 重置进度条
+            seekBar.value = 0;
             // 在新视频加载完成后恢复播放速度
             video.addEventListener('loadeddata', function() {
                 video.playbackRate = savedPlaybackRate;
@@ -412,7 +489,7 @@
             const videoPlayer = document.getElementById('main-video');
 
             // 获取视频列表
-            fetch('/api/anime')
+            fetch('/api/videos')
                 .then(response => response.json())
                 .then(videos => {
                     videos.forEach(videoPath => {
