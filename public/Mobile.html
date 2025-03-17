@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,17 +35,22 @@
             margin-bottom: 5px;
             cursor: pointer;
             display: flex;
-            align-items: center; /* 垂直居中对齐 */
-            transition: all 0.3s ease; /* 平滑过渡效果 */
+            align-items: center;
+            /* 垂直居中对齐 */
+            transition: all 0.3s ease;
+            /* 平滑过渡效果 */
             background-color: var(--background-color);
             color: var(--text-color);
         }
 
         /* 点击后的样式 */
         .clicked {
-            background-color: var(--highlight-background-color); /* 使用变量 */
-            color: var(--highlight-text-color); /* 使用变量 */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+            background-color: var(--highlight-background-color);
+            /* 使用变量 */
+            color: var(--highlight-text-color);
+            /* 使用变量 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* 阴影效果 */
         }
 
         /* 图片样式 */
@@ -55,30 +61,44 @@
         }
 
         .button-container {
-            display: flex; /* 默认显示按钮 */
-            position: fixed; /* 固定定位 */
-            bottom: 45px; /* 距离底部的距离 */
-            right: 5px; /* 距离右侧的距离 */
-            flex-direction: column-reverse; /* 使内容从下往上排列 */
-            justify-content: flex-end; /* 确保内容对齐到容器底部 */
-            gap: 5px; /* 按钮之间的间距 */
+            display: flex;
+            /* 默认显示按钮 */
+            position: fixed;
+            /* 固定定位 */
+            bottom: 60px;
+            /* 距离底部的距离 */
+            right: 5px;
+            /* 距离右侧的距离 */
+            flex-direction: column-reverse;
+            /* 使内容从下往上排列 */
+            justify-content: flex-end;
+            /* 确保内容对齐到容器底部 */
+            gap: 5px;
+            /* 按钮之间的间距 */
         }
 
         .button {
-            width: 40px; /* 固定宽度 */
-            height: 40px; /* 固定高度 */
-            background-color: #007bff; /* 按钮背景颜色 */
+            width: 40px;
+            /* 固定宽度 */
+            height: 40px;
+            /* 固定高度 */
+            background-color: #007bff;
+            /* 按钮背景颜色 */
             color: white;
             border: none;
-            cursor: pointer; /* 当鼠标悬停在按钮上时，光标会变成手型，提示用户这是一个可点击的按钮 */
+            cursor: pointer;
+            /* 当鼠标悬停在按钮上时，光标会变成手型，提示用户这是一个可点击的按钮 */
             border-radius: 5px;
             font-size: 16px;
-            opacity: 0.8; /* 初始透明度 */
-            transition: opacity 0.3s ease; /* 平滑过渡效果 */
+            opacity: 0.8;
+            /* 初始透明度 */
+            transition: opacity 0.3s ease;
+            /* 平滑过渡效果 */
         }
 
         .button:hover {
-            background-color: #0056b3; /* 鼠标悬停时的背景颜色 */
+            background-color: #0056b3;
+            /* 鼠标悬停时的背景颜色 */
         }
 
         .video-container {
@@ -87,21 +107,24 @@
             top: 0;
             left: 0;
             width: 100%;
-            z-index: 1000; /* 确保视频播放器在最上层 */
+            z-index: 1000;
+            /* 确保视频播放器在最上层 */
         }
 
         /* 视频播放器样式 */
         video {
             width: 100%;
             height: 221px;
- 
+
         }
 
         .video-list-container {
             flex: 1 0 auto;
             overflow-y: auto;
-            margin-top: 240px; /* 根据视频播放器的高度调整此值 */
-            padding-bottom: 60px; /* 根据按钮栏的高度调整此值 */
+            margin-top: 240px;
+            /* 根据视频播放器的高度调整此值 */
+            padding-bottom: 60px;
+            /* 根据按钮栏的高度调整此值 */
         }
 
         .video-list-container ul {
@@ -129,28 +152,37 @@
         }
 
         /* 搜索基本样式 */
-        .videoAndSearch{
+        .videoAndSearch {
             display: flex;
             font-size: 24px;
         }
+
         .search-container {
             display: flex;
-            justify-content: flex-end; /* 使内容靠右对齐 */
-            margin-left: auto; /* 强制容器靠右 */
-            align-items: center; /* 垂直居中对齐 */
+            justify-content: flex-end;
+            /* 使内容靠右对齐 */
+            margin-left: auto;
+            /* 强制容器靠右 */
+            align-items: center;
+            /* 垂直居中对齐 */
             width: 210px;
-            right: 0; /* 靠右对齐 */
-            top: 20px; /* 根据需要调整顶部距离 */
+            right: 0;
+            /* 靠右对齐 */
+            top: 20px;
+            /* 根据需要调整顶部距离 */
         }
-        .search-container > * {
+
+        .search-container>* {
             margin: 5px 1px;
         }
+
         input[type=text] {
             padding: 5px;
             width: 50%;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         button {
             padding: 5px 10px;
             background-color: #4CAF50;
@@ -159,51 +191,64 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         button:hover {
             background-color: #45a049;
         }
+
         .highlight {
             background-color: yellow;
         }
+
         .result-message {
             font-weight: bold;
             display: none;
         }
+
         .error-message {
             color: red;
             display: none;
         }
 
-        /* 进度条控制 */
+        /* 自定义进度条 */
         input[type=range] {
             width: 95%;
+            height: 40px;
         }
 
         .controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: fixed; /* 固定定位 */
-            bottom: 0; /* 固定在屏幕底部 */
+            position: fixed;
+            /* 固定定位 */
+            bottom: 0;
+            /* 固定在屏幕底部 */
             left: 0;
             right: 0;
             background-color: var(--background-color);
             padding: 5px;
             border-top: 1px solid #ccc;
-            z-index: 1000; /* 确保在其他内容之上 */
+            z-index: 1000;
+            /* 确保在其他内容之上 */
         }
 
         .controls button {
             padding: 2px;
-            font-size: 24px; /* 增大字体以确保符号清晰可见 */
-            font-weight: bold; /* 加粗字体 */
+            font-size: 24px;
+            /* 增大字体以确保符号清晰可见 */
+            font-weight: bold;
+            /* 加粗字体 */
             cursor: pointer;
-            border: none; /* 去掉按钮边框 */
-            background-color: transparent; /* 设置背景透明 */
+            border: none;
+            /* 去掉按钮边框 */
+            background-color: transparent;
+            /* 设置背景透明 */
         }
 
         .controls button:hover {
-            background-color: #ddd; /* 鼠标悬停时改变背景颜色 */
+            background-color: #ddd;
+            /* 鼠标悬停时改变背景颜色 */
         }
     </style>
 </head>
@@ -213,13 +258,13 @@
         <!-- 切换模式按钮 -->
         <button class="button" id="themeToggle" onclick="toggleTheme()">🔆</button>
         <!-- 切换视频按钮 -->
-        <button class="button" id="switchVideo" onclick="switchVideo()">⚪</button>
+        <button class="button" id="switchVideo">⚪</button>
         <!-- 速度切换按钮 -->
         <button class="button" id="speedBtn">1x</button>
         <!-- 滚到底部按钮 -->
         <button class="button" id="scrollToBtm" class="UpDownBtm" title="滚到底部">↓</button>
         <!-- 返回顶部按钮 -->
-        <button class="button" id="backToTopBtn" class="UpDownBtm" title="返回顶部" style="display: none;">↑</button>     
+        <button class="button" id="backToTopBtn" class="UpDownBtm" title="返回顶部" style="display: none;">↑</button>
     </div>
 
     <script>
@@ -233,109 +278,36 @@
                 themeToggle.textContent = '🔆';
             }
         }
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // 使用事件委托绑定点击事件到父级元素
-            document.body.addEventListener('click', function(event) {
+            document.body.addEventListener('click', function (event) {
                 if (event.target.closest('.video-item')) {
                     var item = event.target.closest('.video-item');
 
                     // 移除所有项目的特殊样式和图标
-                    document.querySelectorAll('.video-item').forEach(function(otherItem) {
+                    document.querySelectorAll('.video-item').forEach(function (otherItem) {
                         otherItem.classList.remove('clicked');
                         otherItem.classList.add('default'); // 还原默认样式
 
-                    // 移除之前可能存在的图片元素
-                    if (otherItem.querySelector('.icon')) {
-                        otherItem.removeChild(otherItem.querySelector('.icon'));
-                    }
-                });
+                        // 移除之前可能存在的图片元素
+                        if (otherItem.querySelector('.icon')) {
+                            otherItem.removeChild(otherItem.querySelector('.icon'));
+                        }
+                    });
 
-                // 给当前点击的项目添加特殊样式和图标
-                item.classList.remove('default');
-                item.classList.add('clicked');
+                    // 给当前点击的项目添加特殊样式和图标
+                    item.classList.remove('default');
+                    item.classList.add('clicked');
 
-                // 创建并插入图片元素
-                var img = document.createElement('img');
-                img.src = '/asserts/playing.gif';
-                img.alt = 'Playing Icon';
-                img.className = 'icon';
-                item.insertBefore(img, item.firstChild);
+                    // 创建并插入图片元素
+                    var img = document.createElement('img');
+                    img.src = '/asserts/playing.gif';
+                    img.alt = 'Playing Icon';
+                    img.className = 'icon';
+                    item.insertBefore(img, item.firstChild);
                 }
             });
         });
-
-        // 切换视频类型函数
-        function switchVideo() {
-            var switchVideo = document.getElementById('switchVideo');
-            if (switchVideo.textContent == "⚪") {
-                switchVideo.textContent = "🔴";
-                clearVideoItems();
-
-                const videoItemsContainer = document.getElementById('videoItems');
-                const videoPlayer = document.getElementById('main-video');
-
-                // 获取视频列表
-                fetch('/api/anime')
-                    .then(response => response.json())
-                    .then(videos => {
-                        videos.forEach(videoPath => {
-                            const videoItem = document.createElement('div');
-                            videoItem.className = 'video-item';
-                            videoItem.textContent = decodeURIComponent(videoPath.split('/').pop()); // 显示文件名
-                            videoItem.onclick = () => playVideo(videoPath);
-                            videoItemsContainer.appendChild(videoItem);
-                        });
-                        updateCount();
-                    })
-                    .catch(err => console.error('获取视频列表失败:', err));
-
-                function playVideo(videoPath) {
-                    savedPlaybackRate = speeds[currentSpeedIndex]; // 保存当前播放速度
-                    videoPlayer.src = videoPath;
-                    videoPlayer.load(); // 加载新的视频源
-                    videoPlayer.play();
-                    resetSeekBarAndSpeed();
-                }
-            } else {
-                switchVideo.textContent = "⚪";
-                clearVideoItems();
-
-                const videoItemsContainer = document.getElementById('videoItems');
-                const videoPlayer = document.getElementById('main-video');
-
-                // 获取视频列表
-                fetch('/api/videos')
-                    .then(response => response.json())
-                    .then(videos => {
-                        videos.forEach(videoPath => {
-                            const videoItem = document.createElement('div');
-                            videoItem.className = 'video-item';
-                            videoItem.textContent = decodeURIComponent(videoPath.split('/').pop()); // 显示文件名
-                            videoItem.onclick = () => playVideo(videoPath);
-                            videoItemsContainer.appendChild(videoItem);
-                        });
-                        updateCount();
-                    })
-                    .catch(err => console.error('获取视频列表失败:', err));
-
-                function playVideo(videoPath) {
-                    savedPlaybackRate = speeds[currentSpeedIndex]; // 保存当前播放速度
-                    videoPlayer.src = videoPath;
-                    videoPlayer.load(); // 加载新的视频源
-                    videoPlayer.play();
-                    resetSeekBarAndSpeed();
-                }
-            }
-        }
-
-        // 定义清空函数
-        function clearVideoItems() {
-            // 获取目标 div 元素
-            var videoItemsDiv = document.getElementById("videoItems");
-
-            // 清除 div 内的所有内容
-            videoItemsDiv.innerHTML = '';
-        }
     </script>
 
     <!-- 视频播放器 -->
@@ -373,32 +345,32 @@
         var speedBtn = document.getElementById('speedBtn');
 
         // 设置视频总时长并初始化进度条
-        video.addEventListener('loadedmetadata', function() {
+        video.addEventListener('loadedmetadata', function () {
             seekBar.max = video.duration; // 设置进度条的最大值为视频总时长
         });
 
         // 更新滑动条位置
-        video.addEventListener('timeupdate', function() {
+        video.addEventListener('timeupdate', function () {
             seekBar.value = video.currentTime; // 直接使用当前时间作为进度条的值
         });
 
         // 监听进度条输入事件（实时更新）
-        seekBar.addEventListener('input', function() {
+        seekBar.addEventListener('input', function () {
             video.currentTime = seekBar.value;
         });
 
         // 监听进度条变更事件（用户释放鼠标后更新）
-        seekBar.addEventListener('change', function() {
+        seekBar.addEventListener('change', function () {
             video.currentTime = seekBar.value;
         });
 
         // 快退按钮点击事件
-        rewindBtn.addEventListener('click', function() {
+        rewindBtn.addEventListener('click', function () {
             video.currentTime = Math.max(video.currentTime - 3, 0);
         });
 
         // 快进按钮点击事件
-        fastForwardBtn.addEventListener('click', function() {
+        fastForwardBtn.addEventListener('click', function () {
             video.currentTime = Math.min(video.currentTime + 3, video.duration);
         });
 
@@ -412,7 +384,7 @@
             // 重置进度条
             seekBar.value = 0;
             // 在新视频加载完成后恢复播放速度
-            video.addEventListener('loadeddata', function() {
+            video.addEventListener('loadeddata', function () {
                 video.playbackRate = savedPlaybackRate;
                 speedBtn.textContent = `${savedPlaybackRate}x`;
                 video.play(); // 自动播放新视频
@@ -426,18 +398,18 @@
             speedBtn.textContent = `${speeds[currentSpeedIndex]}x`;
         }
 
-        speedBtn.addEventListener('click', function() {
+        speedBtn.addEventListener('click', function () {
             currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
             setPlaybackSpeed(currentSpeedIndex);
         });
 
         // 页面加载时设置默认播放速度
-        window.onload = function() {
+        window.onload = function () {
             setPlaybackSpeed(0); // 默认设置为1x
         };
 
         // 监听播放速度变化并更新按钮文本
-        video.addEventListener('ratechange', function() {
+        video.addEventListener('ratechange', function () {
             const currentRate = video.playbackRate;
             for (let i = 0; i < speeds.length; i++) {
                 if (speeds[i] === currentRate) {
@@ -480,44 +452,71 @@
                 behavior: 'smooth' // 平滑滚动
             });
         });
-    </script>   
+    </script>
 
     <!-- 获取视频 -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const videoItemsContainer = document.getElementById('videoItems');
-            const videoPlayer = document.getElementById('main-video');
+        // 获取媒体列表容器元素、视频播放器元素和按钮元素
+        const videoItemsContainer = document.getElementById('videoItems');
+        const videoPlayer = document.getElementById('main-video');
+        const switchVideo = document.getElementById('switchVideo');
 
-            // 获取视频列表
-            fetch('/api/videos')
-                .then(response => response.json())
-                .then(videos => {
-                    videos.forEach(videoPath => {
-                        const videoItem = document.createElement('div');
-                        videoItem.className = 'video-item';
-                        videoItem.textContent = decodeURIComponent(videoPath.split('/').pop()); // 显示文件名
-                        videoItem.onclick = () => playVideo(videoPath);
-                        videoItemsContainer.appendChild(videoItem);
-                    });
-                    updateCount();
-                })
-                .catch(err => console.error('获取视频列表失败:', err));
+        let isShowingVideos = false; // 标记当前显示的是视频还是动漫
 
-            function playVideo(videoPath) {
-                savedPlaybackRate = speeds[currentSpeedIndex]; // 保存当前播放速度
-                videoPlayer.src = videoPath;
-                videoPlayer.load(); // 加载新的视频源
-                videoPlayer.play();
-                resetSeekBarAndSpeed();
-            }
-
-        });
-
-        function updateCount() {
-            const parent = document.getElementById('videoItems');
-            const childDivs = parent.querySelectorAll(':scope > div'); // 获取所有直接子div
-            document.getElementById('videosName').innerText = '视频列表：' + childDivs.length;
+        // 创建媒体项并添加到页面
+        function createMediaItem(videoPath) {
+            const videoItem = document.createElement('div');
+            videoItem.className = 'video-item';
+            videoItem.textContent = decodeURIComponent(videoPath.split('/').pop()); // 显示文件名
+            videoItem.onclick = () => playMedia(videoPath);
+            videoItemsContainer.appendChild(videoItem);
         }
+
+        // 播放指定路径的媒体
+        function playMedia(videoPath) {
+            savedPlaybackRate = speeds[currentSpeedIndex]; // 保存当前播放速度
+            videoPlayer.src = videoPath;
+            videoPlayer.load();
+            videoPlayer.play();
+            resetSeekBarAndSpeed();
+        }
+
+        // 处理从API获取的媒体路径列表
+        function processMediaPaths(videoPath) {
+            // 清空之前的媒体项
+            videoItemsContainer.innerHTML = '';
+            videoPath.forEach(videoPath => {
+                createMediaItem(videoPath);
+            });
+        }
+
+        // 从API获取媒体数据并处理
+        function fetchAndProcessData(isVideos) {
+            const apiUrl = isVideos ? '/api/videos' : '/api/anime';
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(videoPath => {
+                    if (Array.isArray(videoPath)) {
+                        processMediaPaths(videoPath);
+                    } else {
+                        console.error(`无效的${isVideos ? '视频' : '动漫'}路径格式`);
+                    }
+                })
+                .catch(err => console.error(`获取${isVideos ? '视频' : '动漫'}数据失败:`, err));
+        }
+
+        // 切换显示视频或动漫列表
+        function toggleMediaList() {
+            isShowingVideos = !isShowingVideos;
+            switchVideo.textContent = isShowingVideos ? '⚪' : '🔴';
+            fetchAndProcessData(isShowingVideos);
+        }
+
+        // 页面加载完成后初始化显示视频列表
+        window.onload = () => {
+            toggleMediaList(); // 默认显示视频列表
+            switchVideo.addEventListener('click', toggleMediaList);
+        };
     </script>
 
     <!-- 搜索 -->
@@ -578,25 +577,26 @@
 
         // 记录初始播放速度
         var defaultSpeed = vid.playbackRate;
-        
+
         // 阻止长按视频时的默认菜单
-        vid.addEventListener('contextmenu', function(event) {
+        vid.addEventListener('contextmenu', function (event) {
             event.preventDefault();
         });
 
         // 监听触摸开始事件
-        vid.addEventListener('touchstart', function() {
+        vid.addEventListener('touchstart', function () {
             // 记录初始播放速度
             defaultSpeed = vid.playbackRate;
             // 设置播放速度为3x
             vid.playbackRate = 3;
         });
-        
+
         // 监听触摸结束事件
-        vid.addEventListener('touchend', function() {
+        vid.addEventListener('touchend', function () {
             // 恢复初始播放速度
             vid.playbackRate = defaultSpeed;
         });
     </script>
 </body>
+
 </html>
