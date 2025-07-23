@@ -1,5 +1,7 @@
 const express = require('express');
 const fs = require('fs').promises; // 使用 promises 版本的 fs 模块
+const https = require('https')
+const http = require('http')
 const path = require('path');
 const app = express();
 const port = 3000;
@@ -8,7 +10,7 @@ const port = 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 视频文件夹路径
-const videoFolderPath = 'D:\\Program Files\\Telegram Desktop\\videos'; // 注意路径中的双反斜杠
+const videoFolderPath = 'D:\\videos'; // 注意路径中的双反斜杠
 const animeFolderPath = 'D:\\Program Files\\Telegram Desktop\\anime'; // 注意路径中的双反斜杠
 
 // 递归获取所有视频文件
