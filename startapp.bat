@@ -1,4 +1,5 @@
 @echo off
+<<<<<<< HEAD
 cd /d "D:\Program Files\LocalVideoPlayer" || (
     echo 无法切换到目标目录！
     pause
@@ -20,3 +21,9 @@ if errorlevel 1 (
 
 call pm2 save
 pause
+=======
+cd /d "D:\app"
+pm2 start app.js
+pm2 startup
+pm2 save
+>>>>>>> 0684f618c09bd91af0c698ff2916a04faed7d69e
