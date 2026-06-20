@@ -79,7 +79,7 @@ openssl req -x509 -newkey rsa:4096 -keyout certs/private.key -out certs/certific
 
 `/videos2/*` – 映射到 `VIDEO_2_FOLDER_PATH` 目录
 
-两个路由均支持 Range 请求，可直接用于 HTML5 `<video>` 标签：
+两个路由均支持 `Range` 请求，可直接用于 HTML5 `<video>` 标签：
 
 ```html
 <video src="/videos/movie1.mp4" controls></video>
@@ -99,11 +99,11 @@ openssl req -x509 -newkey rsa:4096 -keyout certs/private.key -out certs/certific
 ## 📝 注意事项
 该服务器不包含用户认证，请勿直接暴露在公网，建议在内网使用或配合反向代理添加权限控制。
 
-支持的文件格式仅为 .mp4, .mov, .avi，如需扩展，可在 supportedFormats 数组中添加。
+支持的文件格式仅为 `.mp4`, `.mov`, `.avi`，如需扩展，可在 `supportedFormats` 数组中添加。
 
-对于非常大的视频文件，请确保服务器有足够的内存和带宽，Node.js 的 express.static 会利用流式传输，不会将文件完全加载到内存中。
+对于非常大的视频文件，请确保服务器有足够的内存和带宽，`Node.js` 的 `express.static` 会利用流式传输，不会将文件完全加载到内存中。
 
-HTTPS 自签名证书在浏览器中会显示不安全提示，仅用于测试环境；生产环境请使用受信任的证书。
+`HTTPS` 自签名证书在浏览器中会显示不安全提示，仅用于测试环境；生产环境请使用受信任的证书。
 
 ## 📄 许可证
 ```
