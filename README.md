@@ -89,7 +89,7 @@ openssl req -x509 -newkey rsa:4096 -keyout certs/private.key -out certs/certific
 
 ## ⚙️ 环境变量（可选）
 | 变量名	| 说明	| 默认值 |
-| ------ | ------ | ------ |
+| :---: | :---: | :---: |
 | PORT	| HTTP | 监听端口	3000 |
 | VIDEO_1_PATH	| 第一个视频目录路径	| D:/videos |
 | VIDEO_2_PATH	| 第二个视频目录路径	| D:/videos2 |
