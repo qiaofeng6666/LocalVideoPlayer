@@ -88,10 +88,11 @@ openssl req -x509 -newkey rsa:4096 -keyout certs/private.key -out certs/certific
 访问根路径 / 会显示一个简单的导航页面，列出两个 API 的链接，方便测试。
 
 ## ⚙️ 环境变量（可选）
-|变量名	|说明	|默认值|
-|PORT	|HTTP |监听端口	3000|
-|VIDEO_1_PATH	|第一个视频目录路径	|D:/videos|
-|VIDEO_2_PATH	|第二个视频目录路径	|D:/videos2|
+| 变量名	| 说明	| 默认值 |
+| ------ | ------ | ------ |
+| PORT	| HTTP | 监听端口	3000 |
+| VIDEO_1_PATH	| 第一个视频目录路径	| D:/videos |
+| VIDEO_2_PATH	| 第二个视频目录路径	| D:/videos2 |
 如果你通过环境变量配置目录，记得修改代码中的读取逻辑（参考上文）。
 
 ## 📝 注意事项
