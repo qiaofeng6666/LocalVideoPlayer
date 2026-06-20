@@ -93,6 +93,7 @@ openssl req -x509 -newkey rsa:4096 -keyout certs/private.key -out certs/certific
 | PORT	| HTTP | 监听端口	3000 |
 | VIDEO_1_PATH	| 第一个视频目录路径	| D:/videos |
 | VIDEO_2_PATH	| 第二个视频目录路径	| D:/videos2 |
+
 如果你通过环境变量配置目录，记得修改代码中的读取逻辑（参考上文）。
 
 ## 📝 注意事项
