@@ -60,25 +60,26 @@ mkdir certs
 openssl req -x509 -newkey rsa:4096 -keyout certs/private.key -out certs/certificate.crt -days 365 -nodes
 ```
 ## 🔌 API 文档
-GET /api/videos
-返回 VIDEO_1_FOLDER_PATH 目录下所有受支持视频文件的相对 URL 列表。
+### GET /api/videos
+返回 'VIDEO_1_FOLDER_PATH' 目录下所有受支持视频文件的相对 URL 列表。
 
 响应示例：
 
-json
+```json
 [
   "/videos/movie1.mp4",
   "/videos/subfolder/clip2.mp4"
 ]
-GET /api/videos2
-同上，但针对 VIDEO_2_FOLDER_PATH 目录。
+```
+### GET /api/videos2
+同上，但针对 'VIDEO_2_FOLDER_PATH' 目录。
 
 ## 📁 静态文件服务
-/videos/* – 映射到 VIDEO_1_FOLDER_PATH 目录
+'/videos/*' – 映射到 'VIDEO_1_FOLDER_PATH' 目录
 
-/videos2/* – 映射到 VIDEO_2_FOLDER_PATH 目录
+'/videos2/*' – 映射到 'VIDEO_2_FOLDER_PATH' 目录
 
-这两个路由均支持 Range 请求，因此你可以直接在 HTML5 <video> 标签中使用，并可拖动进度条：
+两个路由均支持 Range 请求，可直接用于 HTML5 '<video>' 标签：
 
 ```html
 <video src="/videos/movie1.mp4" controls></video>
