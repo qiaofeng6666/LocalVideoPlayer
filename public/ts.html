@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/favicon/video_player.ico" type="image/x-icon">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon/video_player.ico" type="image/x-icon" />
     <title>铤少看片神器</title>
     <style>
+        /* ===== 全局重置 & 变量 ===== */
         * {
             box-sizing: border-box;
         }
 
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
             width: 100%;
@@ -36,8 +38,8 @@
             --hover-bg: #34344a;
             --button-bg: #6c63ff;
             --button-hover-bg: #5a52d5;
-            --shadow-color: rgba(0,0,0,0.3);
-            --card-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             --transition-speed: 0.25s;
         }
 
@@ -52,12 +54,12 @@
             --hover-bg: #f0f2f5;
             --button-bg: #6c63ff;
             --button-hover-bg: #5a52d5;
-            --shadow-color: rgba(0,0,0,0.08);
-            --card-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
             --transition-speed: 0.25s;
         }
 
-        /* ---------- 背景光晕 ---------- */
+        /* ===== 背景光晕 ===== */
         .bg-glow {
             position: fixed;
             top: 0;
@@ -74,7 +76,7 @@
                 radial-gradient(ellipse at 50% 50%, rgba(20, 20, 50, 0.3) 0%, transparent 70%);
         }
 
-        /* ---------- 滚动文字层 ---------- */
+        /* ===== 滚动文字层 ===== */
         .bg-scroll-text {
             position: fixed;
             top: 0;
@@ -92,12 +94,12 @@
         }
 
         .bg-scroll-text.hidden-scroll {
-            display: none !important; /* 隐藏弹幕 */
+            display: none !important;
         }
 
         @media (max-width: 768px) {
             .bg-scroll-text {
-                transform: rotate(-6deg) scale(1.5); /* 移动端保留固定缩放 */
+                transform: rotate(-6deg) scale(1.5);
             }
         }
 
@@ -107,7 +109,7 @@
             font-size: clamp(1.3rem, 2.2vw, 2.2rem);
             line-height: 1.6;
             color: #6b6bb0;
-            text-shadow: 0 0 1px rgba(0,0,0,0.3);
+            text-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
             opacity: 0.85;
             will-change: transform;
             width: max-content;
@@ -139,16 +141,24 @@
         }
 
         @keyframes scrollLeft {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
         }
 
         @keyframes scrollRight {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(0); }
+            0% {
+                transform: translateX(-50%);
+            }
+            100% {
+                transform: translateX(0);
+            }
         }
 
-        /* ---------- 主界面 ---------- */
+        /* ===== 主界面 ===== */
         .main-container {
             width: 100%;
             max-width: 1700px;
@@ -161,17 +171,70 @@
             z-index: 2;
         }
 
+        /* ============================================================
+               🎨 H1 炫彩流光标题 —— 核心修改区域
+               ============================================================ */
         .page-title {
             text-align: center;
-            font-size: 2rem;
-            font-weight: 600;
+            font-size: 2.4rem;
+            /* 稍微放大更醒目 */
+            font-weight: 800;
             margin: 0;
-            padding: 10px 0;
+            padding: 12px 0 8px;
+            letter-spacing: 4px;
+            /* 更舒展 */
+
+            /* ---------- 彩虹渐变背景 ---------- */
+            background: linear-gradient(90deg,
+                    #ff6b6b,
+                    #ffd93d,
+                    #6bcb77,
+                    #4d96ff,
+                    #9b59b6,
+                    #ff6b6b);
+            background-size: 400% 100%;
+            /* 宽度拉大让位移有空间 */
+
+            /* ---------- 裁剪到文字 ---------- */
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+
+            /* ---------- 流光动画 ---------- */
+            animation: rainbowFlow 5.0s linear infinite;
+
+            /* ---------- 霓虹光晕（兼容 background-clip） ---------- */
+            filter: drop-shadow(0 0 18px rgba(108, 99, 255, 0.35))
+                drop-shadow(0 0 40px rgba(255, 107, 107, 0.15));
+
+            /* 取消旧的文字颜色和阴影，已被覆盖 */
+            /* color 和 text-shadow 不再需要，但保留以防回退 */
             color: var(--accent-color);
-            letter-spacing: 2px;
-            text-shadow: 0 2px 4px var(--shadow-color);
+            text-shadow: none;
         }
 
+        /* ---------- 流光关键帧 ---------- */
+        @keyframes rainbowFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 400% 50%;
+            }
+        }
+
+        /* ---------- 响应式适配 ---------- */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.8rem;
+                letter-spacing: 2px;
+                padding: 8px 0 4px;
+                filter: drop-shadow(0 0 12px rgba(108, 99, 255, 0.3))
+                    drop-shadow(0 0 30px rgba(255, 107, 107, 0.1));
+            }
+        }
+
+        /* ===== 内容区 ===== */
         .content-area {
             display: flex;
             flex-direction: row;
@@ -227,7 +290,6 @@
         video:fullscreen {
             border-radius: 0;
         }
-
         video:-webkit-full-screen {
             border-radius: 0;
         }
@@ -315,7 +377,7 @@
             opacity: 0.7;
         }
 
-        input[type=text] {
+        input[type="text"] {
             padding: 8px 14px;
             width: 160px;
             border: 2px solid var(--border-color);
@@ -327,7 +389,7 @@
             transition: all var(--transition-speed);
         }
 
-        input[type=text]:focus {
+        input[type="text"]:focus {
             border-color: var(--accent-color);
             box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
         }
@@ -528,10 +590,9 @@
             transform: scale(0.95);
         }
 
-        /* 弹幕关闭时按钮样式 */
         #toggleScrollBtn.scroll-off {
             background-color: #555;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             opacity: 0.7;
         }
 
@@ -555,6 +616,9 @@
             }
             .page-title {
                 display: none;
+                /* 移动端保留可隐藏，但这里为了炫彩效果，我们让它显示 */
+                display: block;
+                font-size: 1.6rem;
             }
             .video-player-wrapper {
                 position: static;
@@ -577,7 +641,7 @@
                 max-height: 70vh;
                 flex-basis: auto;
             }
-            input[type=text] {
+            input[type="text"] {
                 width: 130px;
             }
         }
@@ -589,6 +653,7 @@
     <div class="bg-scroll-text" id="bgScrollText"></div>
 
     <div class="main-container">
+        <!-- 🎨 H1 标题 —— 炫彩流光效果已通过 CSS 实现 -->
         <h1 class="page-title">铤少看片神器</h1>
 
         <div class="content-area">
@@ -603,7 +668,7 @@
                     <div class="search-container">
                         <span class="result-message" id="resultMessage" aria-live="polite"></span>
                         <span class="error-message" id="errorMessage" aria-live="assertive">请输入搜索关键词。</span>
-                        <input type="text" id="searchText" placeholder="搜索视频..." aria-label="搜索视频">
+                        <input type="text" id="searchText" placeholder="搜索视频..." aria-label="搜索视频" />
                         <button id="searchBtn">搜索</button>
                         <button id="clearSearchBtn" class="clear-search-btn" style="display:none;">✕ 清除</button>
                         <div class="search-nav" id="searchNav">
@@ -659,14 +724,13 @@
                 themeToggle.textContent = '🔆';
             }
 
-            // 弹幕显示状态（默认显示）
             let scrollVisible = localStorage.getItem(SCROLL_STORAGE_KEY) !== 'hidden';
 
             let abortController = null;
             let matchElements = [];
             let currentMatchIndex = -1;
 
-            // ---------- 弹幕开关控制 ----------
+            // ---------- 弹幕开关 ----------
             function applyScrollVisibility() {
                 if (scrollVisible) {
                     bgScrollText.classList.remove('hidden-scroll');
@@ -704,7 +768,6 @@
                     const viewHeight = window.innerHeight;
                     if (viewHeight <= 0) return;
 
-                    // 动态测量行高
                     const tempEl = document.createElement('div');
                     tempEl.className = 'scroll-line';
                     tempEl.style.position = 'fixed';
@@ -744,11 +807,8 @@
                         bgScrollText.appendChild(fragment);
                     }
 
-                    // 动态缩放
                     const scale = getResponsiveScale();
                     bgScrollText.style.transform = `rotate(-6deg) scale(${scale})`;
-
-                    // 重新应用显示/隐藏状态（重建后保持用户选择）
                     applyScrollVisibility();
 
                 } catch (e) {
@@ -757,6 +817,7 @@
             }
 
             let resizeTimer;
+
             function handleResize() {
                 clearTimeout(resizeTimer);
                 resizeTimer = setTimeout(() => {
@@ -769,6 +830,7 @@
 
             // ---------- 音量提示 ----------
             let volumeTimeout = null;
+
             function showVolume(level) {
                 if (volumeTimeout) clearTimeout(volumeTimeout);
                 const percent = Math.round(level * 100);
@@ -782,11 +844,11 @@
             // ---------- 快捷键判断 ----------
             function isInteractiveTarget(target) {
                 return target.isContentEditable ||
-                       target.tagName === 'INPUT' ||
-                       target.tagName === 'TEXTAREA' ||
-                       target.tagName === 'SELECT' ||
-                       target.tagName === 'BUTTON' ||
-                       target.tagName === 'A';
+                    target.tagName === 'INPUT' ||
+                    target.tagName === 'TEXTAREA' ||
+                    target.tagName === 'SELECT' ||
+                    target.tagName === 'BUTTON' ||
+                    target.tagName === 'A';
             }
 
             // ---------- 工具函数 ----------
@@ -813,7 +875,8 @@
             }
 
             function showError(message) {
-                videoItemsContainer.innerHTML = `<div class="error-message" role="alert" style="display:block; padding:10px;">⚠️ ${message}</div>`;
+                videoItemsContainer.innerHTML =
+                `<div class="error-message" role="alert" style="display:block; padding:10px;">⚠️ ${message}</div>`;
             }
 
             function resetVideoPlayer() {
@@ -861,7 +924,8 @@
 
             function playVideo(videoPath) {
                 const video = document.createElement('video');
-                if (!video.canPlayType || video.canPlayType('video/mp4') === '' && video.canPlayType('video/webm') === '') {
+                if (!video.canPlayType || video.canPlayType('video/mp4') === '' && video.canPlayType('video/webm') ===
+                    '') {
                     console.warn('浏览器可能不支持该视频格式');
                 }
 
@@ -911,7 +975,8 @@
 
             function updateCurrentHighlight() {
                 document.querySelectorAll('.highlight.current').forEach(el => el.classList.remove('current'));
-                if (matchElements.length === 0 || currentMatchIndex < 0 || currentMatchIndex >= matchElements.length) return;
+                if (matchElements.length === 0 || currentMatchIndex < 0 || currentMatchIndex >= matchElements.length)
+                    return;
                 const currentEl = matchElements[currentMatchIndex];
                 currentEl.classList.add('current');
                 scrollToElement(currentEl);
@@ -945,8 +1010,7 @@
 
                 const walker = document.createTreeWalker(
                     videoItemsContainer,
-                    NodeFilter.SHOW_TEXT,
-                    {
+                    NodeFilter.SHOW_TEXT, {
                         acceptNode: function(node) {
                             if (node.parentElement && node.parentElement.classList.contains('highlight')) {
                                 return NodeFilter.FILTER_REJECT;
@@ -1031,7 +1095,8 @@
                         break;
                     case 'ArrowRight':
                         e.preventDefault();
-                        if (videoPlayer.src) videoPlayer.currentTime = Math.min(videoPlayer.duration || Infinity, videoPlayer.currentTime + 5);
+                        if (videoPlayer.src) videoPlayer.currentTime = Math.min(videoPlayer.duration || Infinity,
+                            videoPlayer.currentTime + 5);
                         break;
                     case 'ArrowUp':
                         e.preventDefault();
@@ -1157,9 +1222,9 @@
             prevMatchBtn.addEventListener('click', () => navigateMatch(-1));
             nextMatchBtn.addEventListener('click', () => navigateMatch(1));
 
-            // 初始加载
+            // ---------- 初始化 ----------
             updateApiButtonUI();
-            applyScrollVisibility(); // 应用初始弹幕可见性
+            applyScrollVisibility();
             loadVideos(currentApi);
         })();
     </script>

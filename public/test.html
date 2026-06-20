@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/favicon/video_player.ico" type="image/x-icon">
-    <title>视频播放器</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon/video_player.ico" type="image/x-icon" />
+    <title>铤少看片神器</title>
     <style>
+        /* ===== 全局重置 & 变量 ===== */
         * {
             box-sizing: border-box;
         }
 
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
             width: 100%;
@@ -19,7 +21,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: var(--body-gradient);
+            background-color: var(--background-color);
             color: var(--text-color);
             transition: background-color 0.3s ease, color 0.3s ease;
             scroll-behavior: smooth;
@@ -36,10 +38,9 @@
             --hover-bg: #34344a;
             --button-bg: #6c63ff;
             --button-hover-bg: #5a52d5;
-            --shadow-color: rgba(0,0,0,0.3);
-            --card-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             --transition-speed: 0.25s;
-            --body-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
         }
 
         :root.theme {
@@ -53,16 +54,114 @@
             --hover-bg: #f0f2f5;
             --button-bg: #6c63ff;
             --button-hover-bg: #5a52d5;
-            --shadow-color: rgba(0,0,0,0.08);
-            --card-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
             --transition-speed: 0.25s;
-            /* 浅色 */
-            --body-gradient: conic-gradient(from 180deg at 50% 60%,
-                #f3e5f5, #ede7f6, #e8eaf6, #e3f2fd,
-                #e0f7fa, #e0f2f1, #e8f5e9, #f1f8e9,
-                #f9fbe7, #fff3e0, #fce4ec, #f3e5f5);
         }
 
+        /* ===== 背景光晕 — 优化：减少层数 + will-change ===== */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            will-change: opacity;
+            /* 提示GPU加速，减少重绘开销 */
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(80, 60, 180, 0.25) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(0, 150, 200, 0.2) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(20, 20, 50, 0.3) 0%, transparent 70%);
+        }
+
+        /* ===== 滚动文字层 — 优化：减少文本量 + GPU加速 ===== */
+        .bg-scroll-text {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+            pointer-events: none;
+            user-select: none;
+            transform-origin: center center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .bg-scroll-text.hidden-scroll {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .bg-scroll-text {
+                transform: rotate(-6deg) scale(1.5);
+            }
+        }
+
+        .bg-scroll-text .scroll-line {
+            white-space: nowrap;
+            font-weight: 800;
+            font-size: clamp(1.3rem, 2.2vw, 2.2rem);
+            line-height: 1.6;
+            color: #6b6bb0;
+            opacity: 0.85;
+            will-change: transform;
+            /* 强制GPU加速 */
+            width: max-content;
+            flex-shrink: 0;
+            /* 使用 translate3d 启用硬件加速 */
+            transform: translate3d(0, 0, 0);
+        }
+
+        @supports (-webkit-background-clip: text) or (background-clip: text) {
+            .bg-scroll-text .scroll-line {
+                background: linear-gradient(90deg, #5a5a9f, #3b6b8b);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                text-shadow: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .bg-scroll-text .scroll-line {
+                font-size: clamp(1rem, 4vw, 1.3rem);
+            }
+        }
+
+        .scroll-line.scroll-left {
+            animation: scrollLeft var(--duration, 35s) linear infinite;
+        }
+
+        .scroll-line.scroll-right {
+            animation: scrollRight var(--duration, 35s) linear infinite;
+        }
+
+        /* 使用 translate3d 强制 GPU 加速 */
+        @keyframes scrollLeft {
+            0% {
+                transform: translate3d(0, 0, 0);
+            }
+            100% {
+                transform: translate3d(-50%, 0, 0);
+            }
+        }
+
+        @keyframes scrollRight {
+            0% {
+                transform: translate3d(-50%, 0, 0);
+            }
+            100% {
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        /* ===== 主界面 — 优化：contain 限制重绘范围 ===== */
         .main-container {
             width: 100%;
             max-width: 1700px;
@@ -71,25 +170,66 @@
             flex-direction: column;
             align-items: center;
             gap: 24px;
+            position: relative;
+            z-index: 2;
+            contain: layout style;
         }
 
+        /* ===== H1 炫彩流光标题 ===== */
         .page-title {
             text-align: center;
-            font-size: 2rem;
-            font-weight: 600;
+            font-size: 2.4rem;
+            font-weight: 800;
             margin: 0;
-            padding: 10px 0;
+            padding: 12px 0 8px;
+            letter-spacing: 4px;
+            background: linear-gradient(90deg,
+                    #ff6b6b,
+                    #ffd93d,
+                    #6bcb77,
+                    #4d96ff,
+                    #9b59b6,
+                    #ff6b6b);
+            background-size: 400% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbowFlow 5.0s linear infinite;
+            filter: drop-shadow(0 0 18px rgba(108, 99, 255, 0.35))
+                drop-shadow(0 0 40px rgba(255, 107, 107, 0.15));
             color: var(--accent-color);
-            letter-spacing: 2px;
-            text-shadow: 0 2px 4px var(--shadow-color);
+            text-shadow: none;
+            will-change: background-position;
+            /* 提示GPU加速动画 */
         }
 
+        @keyframes rainbowFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 400% 50%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.8rem;
+                letter-spacing: 2px;
+                padding: 8px 0 4px;
+                filter: drop-shadow(0 0 12px rgba(108, 99, 255, 0.3))
+                    drop-shadow(0 0 30px rgba(255, 107, 107, 0.1));
+            }
+        }
+
+        /* ===== 内容区 — 优化：contain ===== */
         .content-area {
             display: flex;
             flex-direction: row;
             gap: 24px;
             width: 100%;
             align-items: flex-start;
+            contain: layout style;
         }
 
         .video-player-wrapper {
@@ -109,8 +249,9 @@
             min-height: auto;
             overflow: hidden;
             min-width: 0;
-            /* 作为音量提示的定位参考 */
             position: relative;
+            contain: layout style;
+            /* 限制重绘范围 */
         }
 
         .video-player-wrapper::before {
@@ -140,7 +281,6 @@
         video:fullscreen {
             border-radius: 0;
         }
-
         video:-webkit-full-screen {
             border-radius: 0;
         }
@@ -148,7 +288,6 @@
             border-radius: 0;
         }
 
-        /* 音量提示浮层 */
         .volume-hint {
             position: absolute;
             top: 20px;
@@ -180,6 +319,8 @@
             display: flex;
             flex-direction: column;
             max-height: calc(100vh - 200px);
+            contain: layout style;
+            /* 限制重绘范围 */
         }
 
         .videoAndSearch {
@@ -229,7 +370,7 @@
             opacity: 0.7;
         }
 
-        input[type=text] {
+        input[type="text"] {
             padding: 8px 14px;
             width: 160px;
             border: 2px solid var(--border-color);
@@ -238,10 +379,10 @@
             color: var(--text-color);
             font-size: 0.9rem;
             outline: none;
-            transition: all var(--transition-speed);
+            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
         }
 
-        input[type=text]:focus {
+        input[type="text"]:focus {
             border-color: var(--accent-color);
             box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
         }
@@ -295,7 +436,7 @@
             border-radius: 20px;
             font-size: 0.85rem;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, border-color 0.2s;
             line-height: 1;
         }
 
@@ -325,6 +466,8 @@
             flex: 1;
             padding-right: 6px;
             min-height: 0;
+            contain: layout style;
+            /* 限制重绘范围 */
         }
 
         .video-item {
@@ -334,7 +477,10 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            transition: all var(--transition-speed);
+            transition: background-color var(--transition-speed),
+                border-color var(--transition-speed),
+                transform var(--transition-speed);
+            /* 优化：只过渡需要的属性 */
             background-color: var(--background-color);
             color: var(--text-color);
             font-size: 0.95rem;
@@ -342,6 +488,8 @@
             user-select: none;
             overflow-wrap: break-word;
             word-break: normal;
+            will-change: transform;
+            /* 提示GPU加速，hover平移更流畅 */
         }
 
         .video-item:hover {
@@ -423,13 +571,17 @@
             border-radius: 50%;
             font-size: 18px;
             opacity: 0.85;
-            transition: opacity var(--transition-speed), transform var(--transition-speed), background var(--transition-speed);
+            transition: opacity var(--transition-speed),
+                transform var(--transition-speed),
+                background var(--transition-speed);
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
             backdrop-filter: blur(4px);
             user-select: none;
+            will-change: transform;
+            /* 提示GPU加速 */
         }
 
         .float-btn:hover {
@@ -440,6 +592,12 @@
 
         .float-btn:active {
             transform: scale(0.95);
+        }
+
+        #toggleScrollBtn.scroll-off {
+            background-color: #555;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            opacity: 0.7;
         }
 
         ::-webkit-scrollbar {
@@ -461,7 +619,8 @@
                 flex-direction: column;
             }
             .page-title {
-                display: none;
+                display: block;
+                font-size: 1.6rem;
             }
             .video-player-wrapper {
                 position: static;
@@ -484,7 +643,7 @@
                 max-height: 70vh;
                 flex-basis: auto;
             }
-            input[type=text] {
+            input[type="text"] {
                 width: 130px;
             }
         }
@@ -492,13 +651,15 @@
 </head>
 
 <body>
+    <div class="bg-glow"></div>
+    <div class="bg-scroll-text" id="bgScrollText"></div>
+
     <div class="main-container">
-        <h1 class="page-title">🎬 视频播放器</h1>
+        <h1 class="page-title">铤少看片神器</h1>
 
         <div class="content-area">
             <div class="video-player-wrapper">
                 <video id="videoPlayer" controls></video>
-                <!-- 音量提示浮层 -->
                 <div class="volume-hint" id="volumeHint"></div>
             </div>
 
@@ -508,7 +669,7 @@
                     <div class="search-container">
                         <span class="result-message" id="resultMessage" aria-live="polite"></span>
                         <span class="error-message" id="errorMessage" aria-live="assertive">请输入搜索关键词。</span>
-                        <input type="text" id="searchText" placeholder="搜索视频..." aria-label="搜索视频">
+                        <input type="text" id="searchText" placeholder="搜索视频..." aria-label="搜索视频" />
                         <button id="searchBtn">搜索</button>
                         <button id="clearSearchBtn" class="clear-search-btn" style="display:none;">✕ 清除</button>
                         <div class="search-nav" id="searchNav">
@@ -524,6 +685,7 @@
     </div>
 
     <div class="button-container">
+        <button class="float-btn" id="toggleScrollBtn" title="切换滚动弹幕" aria-label="切换滚动弹幕">📜</button>
         <button class="float-btn" id="toggleApiBtn" title="切换视频源 (当前：Videos)" aria-label="切换视频源">🎬</button>
         <button class="float-btn" id="themeToggle" title="切换主题" aria-label="切换主题">🔆</button>
     </div>
@@ -541,7 +703,9 @@
             const errorMessage = document.getElementById('errorMessage');
             const themeToggle = document.getElementById('themeToggle');
             const toggleApiBtn = document.getElementById('toggleApiBtn');
+            const toggleScrollBtn = document.getElementById('toggleScrollBtn');
             const volumeHint = document.getElementById('volumeHint');
+            const bgScrollText = document.getElementById('bgScrollText');
 
             const searchNav = document.getElementById('searchNav');
             const prevMatchBtn = document.getElementById('prevMatchBtn');
@@ -551,6 +715,7 @@
             // ---------- 状态 ----------
             const API_STORAGE_KEY = 'videoPlayer_api';
             const THEME_STORAGE_KEY = 'videoPlayer_theme';
+            const SCROLL_STORAGE_KEY = 'videoPlayer_scrollVisible';
             let currentApi = localStorage.getItem(API_STORAGE_KEY) || '/api/videos2';
             const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
             if (savedTheme === 'light') {
@@ -560,12 +725,116 @@
                 themeToggle.textContent = '🔆';
             }
 
+            let scrollVisible = localStorage.getItem(SCROLL_STORAGE_KEY) !== 'hidden';
+
             let abortController = null;
             let matchElements = [];
             let currentMatchIndex = -1;
 
-            // ---------- 音量提示控制 ----------
+            // ---------- 弹幕开关 ----------
+            function applyScrollVisibility() {
+                if (scrollVisible) {
+                    bgScrollText.classList.remove('hidden-scroll');
+                    toggleScrollBtn.textContent = '📜';
+                    toggleScrollBtn.classList.remove('scroll-off');
+                    toggleScrollBtn.title = '隐藏滚动弹幕';
+                } else {
+                    bgScrollText.classList.add('hidden-scroll');
+                    toggleScrollBtn.textContent = '🚫';
+                    toggleScrollBtn.classList.add('scroll-off');
+                    toggleScrollBtn.title = '显示滚动弹幕';
+                }
+            }
+
+            toggleScrollBtn.addEventListener('click', () => {
+                scrollVisible = !scrollVisible;
+                localStorage.setItem(SCROLL_STORAGE_KEY, scrollVisible ? 'visible' : 'hidden');
+                applyScrollVisibility();
+            });
+
+            // ---------- 动态滚动背景 — 优化：减少文本量 + 使用更少行数 ----------
+            const SCROLL_TEXT = '铤少看片神器 · 精彩不断 · 高清流畅 · 畅快观影 · ';
+            const MIN_ROWS = 8;
+            const MAX_ROWS = 20;
+
+            function getResponsiveScale() {
+                const width = window.innerWidth;
+                if (width > 1600) return 1.4;
+                if (width > 1200) return 1.8;
+                return 2.2;
+            }
+
+            function createScrollLines() {
+                try {
+                    const viewHeight = window.innerHeight;
+                    if (viewHeight <= 0) return;
+
+                    const tempEl = document.createElement('div');
+                    tempEl.className = 'scroll-line';
+                    tempEl.style.position = 'fixed';
+                    tempEl.style.visibility = 'hidden';
+                    tempEl.textContent = 'X';
+                    document.body.appendChild(tempEl);
+                    const computedStyle = getComputedStyle(tempEl);
+                    const fontSize = parseFloat(computedStyle.fontSize) || 32;
+                    document.body.removeChild(tempEl);
+
+                    const lineHeight = fontSize * 1.6;
+                    const safeLineHeight = (lineHeight > 0 && isFinite(lineHeight)) ? lineHeight : viewHeight / 40;
+
+                    let rows = Math.floor(viewHeight / safeLineHeight);
+                    rows = Math.max(MIN_ROWS, Math.min(MAX_ROWS, rows));
+                    if (isNaN(rows) || rows < MIN_ROWS) rows = MIN_ROWS;
+
+                    const fragment = document.createDocumentFragment();
+
+                    // 优化：重复次数从 12 减少到 8，减少文本渲染量
+                    const textContent = SCROLL_TEXT.repeat(8);
+
+                    for (let i = 0; i < rows; i++) {
+                        const line = document.createElement('div');
+                        line.className = 'scroll-line';
+                        if (i % 2 === 0) {
+                            line.classList.add('scroll-left');
+                        } else {
+                            line.classList.add('scroll-right');
+                        }
+
+                        const duration = 28 + Math.random() * 12;
+                        line.style.setProperty('--duration', `${duration}s`);
+                        line.textContent = textContent;
+                        fragment.appendChild(line);
+                    }
+
+                    if (fragment.children.length > 0) {
+                        bgScrollText.innerHTML = '';
+                        bgScrollText.appendChild(fragment);
+                    }
+
+                    const scale = getResponsiveScale();
+                    bgScrollText.style.transform = `rotate(-6deg) scale(${scale})`;
+                    applyScrollVisibility();
+
+                } catch (e) {
+                    console.warn('滚动字幕生成失败，保留现有内容', e);
+                }
+            }
+
+            let resizeTimer;
+
+            function handleResize() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    createScrollLines();
+                }, 300);
+            }
+
+            window.addEventListener('resize', handleResize);
+            createScrollLines();
+
+            // ---------- 音量提示 ----------
             let volumeTimeout = null;
+
             function showVolume(level) {
                 if (volumeTimeout) clearTimeout(volumeTimeout);
                 const percent = Math.round(level * 100);
@@ -576,15 +845,14 @@
                 }, 1200);
             }
 
-            // ---------- 快捷键判断：是否应该拦截 ----------
+            // ---------- 快捷键判断 ----------
             function isInteractiveTarget(target) {
-                // 检查是否为输入类元素、按钮、链接或内容可编辑
                 return target.isContentEditable ||
-                       target.tagName === 'INPUT' ||
-                       target.tagName === 'TEXTAREA' ||
-                       target.tagName === 'SELECT' ||
-                       target.tagName === 'BUTTON' ||
-                       target.tagName === 'A';
+                    target.tagName === 'INPUT' ||
+                    target.tagName === 'TEXTAREA' ||
+                    target.tagName === 'SELECT' ||
+                    target.tagName === 'BUTTON' ||
+                    target.tagName === 'A';
             }
 
             // ---------- 工具函数 ----------
@@ -611,7 +879,8 @@
             }
 
             function showError(message) {
-                videoItemsContainer.innerHTML = `<div class="error-message" role="alert" style="display:block; padding:10px;">⚠️ ${message}</div>`;
+                videoItemsContainer.innerHTML =
+                    `<div class="error-message" role="alert" style="display:block; padding:10px;">⚠️ ${message}</div>`;
             }
 
             function resetVideoPlayer() {
@@ -621,6 +890,7 @@
                 document.querySelectorAll('.video-item .icon').forEach(icon => icon.remove());
             }
 
+            // ---------- 创建视频项（不绑定事件，使用委托） ----------
             function createVideoItem(videoPath) {
                 const div = document.createElement('div');
                 div.className = 'video-item';
@@ -633,13 +903,6 @@
                 titleSpan.textContent = decodeURIComponent(videoPath.split('/').pop());
                 div.appendChild(titleSpan);
 
-                div.addEventListener('click', () => playVideo(videoPath));
-                div.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        playVideo(videoPath);
-                    }
-                });
                 return div;
             }
 
@@ -649,17 +912,20 @@
                     const existingIcon = el.querySelector('.icon');
                     if (existingIcon) existingIcon.remove();
                 });
-                item.classList.add('clicked');
-                const img = document.createElement('img');
-                img.src = '/asserts/playing.gif';
-                img.alt = '正在播放';
-                img.className = 'icon';
-                item.prepend(img);
+                if (item) {
+                    item.classList.add('clicked');
+                    const img = document.createElement('img');
+                    img.src = '/asserts/playing.gif';
+                    img.alt = '正在播放';
+                    img.className = 'icon';
+                    item.prepend(img);
+                }
             }
 
             function playVideo(videoPath) {
                 const video = document.createElement('video');
-                if (!video.canPlayType || video.canPlayType('video/mp4') === '' && video.canPlayType('video/webm') === '') {
+                if (!video.canPlayType || video.canPlayType('video/mp4') === '' && video.canPlayType('video/webm') ===
+                    '') {
                     console.warn('浏览器可能不支持该视频格式');
                 }
 
@@ -680,6 +946,24 @@
                 videoPlayer.play().catch(e => console.warn('自动播放被阻止:', e));
             }
 
+            // ---------- 事件委托：统一处理 videoItems 上的 click 和 keydown ----------
+            videoItemsContainer.addEventListener('click', (e) => {
+                const target = e.target.closest('.video-item');
+                if (target && target.dataset.path) {
+                    playVideo(target.dataset.path);
+                }
+            });
+
+            videoItemsContainer.addEventListener('keydown', (e) => {
+                const target = e.target.closest('.video-item');
+                if (!target || !target.dataset.path) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    playVideo(target.dataset.path);
+                }
+            });
+
+            // ---------- 搜索功能 ----------
             function clearSearch() {
                 searchInput.value = '';
                 resultMessage.style.display = 'none';
@@ -709,7 +993,8 @@
 
             function updateCurrentHighlight() {
                 document.querySelectorAll('.highlight.current').forEach(el => el.classList.remove('current'));
-                if (matchElements.length === 0 || currentMatchIndex < 0 || currentMatchIndex >= matchElements.length) return;
+                if (matchElements.length === 0 || currentMatchIndex < 0 || currentMatchIndex >= matchElements.length)
+                    return;
                 const currentEl = matchElements[currentMatchIndex];
                 currentEl.classList.add('current');
                 scrollToElement(currentEl);
@@ -743,8 +1028,7 @@
 
                 const walker = document.createTreeWalker(
                     videoItemsContainer,
-                    NodeFilter.SHOW_TEXT,
-                    {
+                    NodeFilter.SHOW_TEXT, {
                         acceptNode: function(node) {
                             if (node.parentElement && node.parentElement.classList.contains('highlight')) {
                                 return NodeFilter.FILTER_REJECT;
@@ -810,40 +1094,27 @@
                 }
             }
 
-            // ---------- 快捷键：全局键盘监听 ----------
+            // ---------- 快捷键 ----------
             window.addEventListener('keydown', function(e) {
-                // 如果焦点在输入、按钮等交互元素上，不触发全局快捷键（Esc 退出全屏除外，由浏览器默认处理）
-                if (isInteractiveTarget(document.activeElement)) {
-                    return;
-                }
-
-                // 只处理无修饰键的按键（Shift 也不算，避免影响文本选择等）
-                if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) {
-                    return;
-                }
+                if (isInteractiveTarget(document.activeElement)) return;
+                if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
 
                 switch (e.key) {
                     case ' ':
                         e.preventDefault();
                         if (videoPlayer.src) {
-                            if (videoPlayer.paused) {
-                                videoPlayer.play().catch(() => {});
-                            } else {
-                                videoPlayer.pause();
-                            }
+                            if (videoPlayer.paused) videoPlayer.play().catch(() => {});
+                            else videoPlayer.pause();
                         }
                         break;
                     case 'ArrowLeft':
                         e.preventDefault();
-                        if (videoPlayer.src) {
-                            videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 5);
-                        }
+                        if (videoPlayer.src) videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 5);
                         break;
                     case 'ArrowRight':
                         e.preventDefault();
-                        if (videoPlayer.src) {
-                            videoPlayer.currentTime = Math.min(videoPlayer.duration || Infinity, videoPlayer.currentTime + 5);
-                        }
+                        if (videoPlayer.src) videoPlayer.currentTime = Math.min(videoPlayer.duration || Infinity,
+                            videoPlayer.currentTime + 5);
                         break;
                     case 'ArrowUp':
                         e.preventDefault();
@@ -872,40 +1143,25 @@
                         e.preventDefault();
                         if (videoPlayer.src) {
                             if (!document.fullscreenElement) {
-                                if (videoPlayer.requestFullscreen) {
-                                    videoPlayer.requestFullscreen();
-                                } else if (videoPlayer.webkitRequestFullscreen) {
-                                    videoPlayer.webkitRequestFullscreen();
-                                } else if (videoPlayer.mozRequestFullScreen) {
-                                    videoPlayer.mozRequestFullScreen();
-                                }
+                                if (videoPlayer.requestFullscreen) videoPlayer.requestFullscreen();
+                                else if (videoPlayer.webkitRequestFullscreen) videoPlayer.webkitRequestFullscreen();
+                                else if (videoPlayer.mozRequestFullScreen) videoPlayer.mozRequestFullScreen();
                             } else {
-                                if (document.exitFullscreen) {
-                                    document.exitFullscreen();
-                                } else if (document.webkitExitFullscreen) {
-                                    document.webkitExitFullscreen();
-                                } else if (document.mozCancelFullScreen) {
-                                    document.mozCancelFullScreen();
-                                }
+                                if (document.exitFullscreen) document.exitFullscreen();
+                                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
                             }
                         }
                         break;
                     case 'Escape':
-                        // 浏览器默认会退出全屏，这里只做保险调用，不 preventDefault
-                        if (document.fullscreenElement) {
-                            if (document.exitFullscreen) {
-                                document.exitFullscreen();
-                            }
-                        }
+                        if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
                         break;
                 }
             });
 
             // ---------- 加载视频列表 ----------
             function loadVideos(api) {
-                if (abortController) {
-                    abortController.abort();
-                }
+                if (abortController) abortController.abort();
                 abortController = new AbortController();
                 const signal = abortController.signal;
 
@@ -921,22 +1177,15 @@
                     .then(videos => {
                         if (!Array.isArray(videos)) throw new Error('数据格式错误，期望数组');
                         videoItemsContainer.innerHTML = '';
-                        videos.forEach(videoPath => {
-                            videoItemsContainer.appendChild(createVideoItem(videoPath));
-                        });
+                        videos.forEach(videoPath => videoItemsContainer.appendChild(createVideoItem(videoPath)));
                         const count = videos.length;
                         updateTitle(count);
                         updateApiButtonUI();
                         localStorage.setItem(API_STORAGE_KEY, currentApi);
-                        if (searchInput.value.trim()) {
-                            performSearch();
-                        }
+                        if (searchInput.value.trim()) performSearch();
                     })
                     .catch(err => {
-                        if (err.name === 'AbortError') {
-                            console.log('请求已取消');
-                            return;
-                        }
+                        if (err.name === 'AbortError') return;
                         console.error('获取列表失败:', err);
                         showError('无法加载列表，请检查网络或接口。');
                         updateTitle(0);
@@ -963,20 +1212,15 @@
             searchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    if (matchElements.length > 0) {
-                        navigateMatch(1);
-                    } else {
-                        performSearch();
-                    }
+                    if (matchElements.length > 0) navigateMatch(1);
+                    else performSearch();
                 }
             });
 
             searchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && e.shiftKey) {
                     e.preventDefault();
-                    if (matchElements.length > 0) {
-                        navigateMatch(-1);
-                    }
+                    if (matchElements.length > 0) navigateMatch(-1);
                 }
             });
 
@@ -989,18 +1233,16 @@
                     return;
                 }
                 if (debounceTimer) clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    performSearch();
-                }, 300);
+                debounceTimer = setTimeout(() => performSearch(), 300);
             });
 
             clearSearchBtn.addEventListener('click', clearSearch);
-
             prevMatchBtn.addEventListener('click', () => navigateMatch(-1));
             nextMatchBtn.addEventListener('click', () => navigateMatch(1));
 
-            // 初始加载
+            // ---------- 初始化 ----------
             updateApiButtonUI();
+            applyScrollVisibility();
             loadVideos(currentApi);
         })();
     </script>
