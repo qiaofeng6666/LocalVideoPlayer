@@ -35,23 +35,23 @@ npm install express
 打开 app.js（或主文件），找到以下两行，将其修改为你本地的实际视频文件夹路径：
 
 ```javascript
-const VIDEO_1_FOLDER_PATH = path.resolve('D:/videos');
-const VIDEO_2_FOLDER_PATH = path.resolve('D:/videos2');
+const VIDEO_1_FOLDER_PATH = path.resolve(`D:/videos`);
+const VIDEO_2_FOLDER_PATH = path.resolve(`D:/videos2`);
 ```
 你也可以改为从环境变量读取，例如：
 
 ```javascript
-const VIDEO_1_FOLDER_PATH = process.env.VIDEO_1_PATH || path.resolve('D:/videos');
-const VIDEO_2_FOLDER_PATH = process.env.VIDEO_2_PATH || path.resolve('D:/videos2');
+const VIDEO_1_FOLDER_PATH = process.env.VIDEO_1_PATH || path.resolve(`D:/videos`);
+const VIDEO_2_FOLDER_PATH = process.env.VIDEO_2_PATH || path.resolve(`D:/videos2`);
 ```
 ### 4. 启动服务器
 ```bash
 node app.js
 ```
-默认 HTTP 服务将运行在 http://localhost:3000（可通过 PORT 环境变量修改）。
+默认 `HTTP` 服务将运行在 http://localhost:3000 （可通过 PORT 环境变量修改）。
 
 ### 5. （可选）启用 HTTPS
-如果你有 SSL 证书（私钥和证书文件），请将它们放在 ./certs/ 目录下，文件名为 private.key 和 certificate.crt，服务器将自动在 3443 端口启动 HTTPS 服务。
+如果你有 SSL 证书（私钥和证书文件），请将它们放在 `./certs/` 目录下，文件名为 `private.key` 和 `certificate.crt`，服务器将自动在 3443 端口启动 HTTPS 服务。
 
 若暂无证书，可使用以下命令生成自签名证书（仅用于测试）：
 
@@ -60,8 +60,8 @@ mkdir certs
 openssl req -x509 -newkey rsa:4096 -keyout certs/private.key -out certs/certificate.crt -days 365 -nodes
 ```
 ## 🔌 API 文档
-### GET /api/videos
-返回 'VIDEO_1_FOLDER_PATH' 目录下所有受支持视频文件的相对 URL 列表。
+### GET `/api/videos`
+返回 `VIDEO_1_FOLDER_PATH` 目录下所有受支持视频文件的相对 URL 列表。
 
 响应示例：
 
@@ -71,15 +71,15 @@ openssl req -x509 -newkey rsa:4096 -keyout certs/private.key -out certs/certific
   "/videos/subfolder/clip2.mp4"
 ]
 ```
-### GET /api/videos2
-同上，但针对 'VIDEO_2_FOLDER_PATH' 目录。
+### GET `/api/videos2`
+同上，但针对 `VIDEO_2_FOLDER_PATH` 目录。
 
 ## 📁 静态文件服务
-'/videos/*' – 映射到 'VIDEO_1_FOLDER_PATH' 目录
+`/videos/*` – 映射到 `VIDEO_1_FOLDER_PATH` 目录
 
-'/videos2/*' – 映射到 'VIDEO_2_FOLDER_PATH' 目录
+`/videos2/*` – 映射到 `VIDEO_2_FOLDER_PATH` 目录
 
-两个路由均支持 Range 请求，可直接用于 HTML5 '<video>' 标签：
+两个路由均支持 Range 请求，可直接用于 HTML5 `<video>` 标签：
 
 ```html
 <video src="/videos/movie1.mp4" controls></video>
