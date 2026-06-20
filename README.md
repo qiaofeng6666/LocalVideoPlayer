@@ -24,36 +24,42 @@
 ```bash
 git clone https://github.com/your-username/video-server.git
 cd video-server
-2. 安装依赖
-bash
+```
+### 2. 安装依赖
+```bash
 npm install express
+```
 本项目仅依赖 express，无需额外包。
 
-3. 配置视频目录
+### 3. 配置视频目录
 打开 app.js（或主文件），找到以下两行，将其修改为你本地的实际视频文件夹路径：
 
-javascript
+```javascript
 const VIDEO_1_FOLDER_PATH = path.resolve('D:/videos');
 const VIDEO_2_FOLDER_PATH = path.resolve('D:/videos2');
+```
 你也可以改为从环境变量读取，例如：
 
-javascript
+```javascript
 const VIDEO_1_FOLDER_PATH = process.env.VIDEO_1_PATH || path.resolve('D:/videos');
 const VIDEO_2_FOLDER_PATH = process.env.VIDEO_2_PATH || path.resolve('D:/videos2');
-4. 启动服务器
-bash
+```
+### 4. 启动服务器
+```bash
 node app.js
+```
 默认 HTTP 服务将运行在 http://localhost:3000（可通过 PORT 环境变量修改）。
 
-5. （可选）启用 HTTPS
+### 5. （可选）启用 HTTPS
 如果你有 SSL 证书（私钥和证书文件），请将它们放在 ./certs/ 目录下，文件名为 private.key 和 certificate.crt，服务器将自动在 3443 端口启动 HTTPS 服务。
 
 若暂无证书，可使用以下命令生成自签名证书（仅用于测试）：
 
-bash
+```bash
 mkdir certs
 openssl req -x509 -newkey rsa:4096 -keyout certs/private.key -out certs/certificate.crt -days 365 -nodes
-🔌 API 文档
+```
+## 🔌 API 文档
 GET /api/videos
 返回 VIDEO_1_FOLDER_PATH 目录下所有受支持视频文件的相对 URL 列表。
 
@@ -67,26 +73,27 @@ json
 GET /api/videos2
 同上，但针对 VIDEO_2_FOLDER_PATH 目录。
 
-📁 静态文件服务
+## 📁 静态文件服务
 /videos/* – 映射到 VIDEO_1_FOLDER_PATH 目录
 
 /videos2/* – 映射到 VIDEO_2_FOLDER_PATH 目录
 
 这两个路由均支持 Range 请求，因此你可以直接在 HTML5 <video> 标签中使用，并可拖动进度条：
 
-html
+```html
 <video src="/videos/movie1.mp4" controls></video>
-🌐 根路由
+```
+## 🌐 根路由
 访问根路径 / 会显示一个简单的导航页面，列出两个 API 的链接，方便测试。
 
-⚙️ 环境变量（可选）
+## ⚙️ 环境变量（可选）
 变量名	说明	默认值
 PORT	HTTP 监听端口	3000
 VIDEO_1_PATH	第一个视频目录路径	D:/videos
 VIDEO_2_PATH	第二个视频目录路径	D:/videos2
 如果你通过环境变量配置目录，记得修改代码中的读取逻辑（参考上文）。
 
-📝 注意事项
+## 📝 注意事项
 该服务器不包含用户认证，请勿直接暴露在公网，建议在内网使用或配合反向代理添加权限控制。
 
 支持的文件格式仅为 .mp4, .mov, .avi，如需扩展，可在 supportedFormats 数组中添加。
@@ -95,5 +102,7 @@ VIDEO_2_PATH	第二个视频目录路径	D:/videos2
 
 HTTPS 自签名证书在浏览器中会显示不安全提示，仅用于测试环境；生产环境请使用受信任的证书。
 
-📄 许可证
+## 📄 许可证
+```
 本项目采用 MIT 许可证。
+```
