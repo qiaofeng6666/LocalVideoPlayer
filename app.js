@@ -102,22 +102,22 @@ app.get('/', (req, res) => {
 });
 
 // ================== 启动 HTTP 服务器 ==================
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`✅ HTTP 服务器运行在: http://localhost:${PORT}`);
     console.log(`📁 视频目录1 (videos): ${VIDEO_1_FOLDER_PATH}`);
     console.log(`📁 视频目录2 (videos2): ${VIDEO_2_FOLDER_PATH}`);
 });
 
 // ================== 可选 HTTPS 支持 ==================
-try {
-    const https = require('https');
-    const options = {
-        key: fs.readFileSync('./certs/private.key'),   // 请替换为你的私钥路径
-        cert: fs.readFileSync('./certs/certificate.crt') // 请替换为你的证书路径
-    };
-    https.createServer(options, app).listen(3443, () => {
-        console.log('🔐 HTTPS 服务器运行在 https://localhost:3443');
-    });
-} catch (err) {
-    console.log('ℹ️ 未启用 HTTPS（证书文件不存在或路径错误），仅提供 HTTP 服务');
-}
+// try {
+//     const https = require('https');
+//     const options = {
+//         key: fs.readFileSync('./certs/private.key'),   // 请替换为你的私钥路径
+//         cert: fs.readFileSync('./certs/certificate.crt') // 请替换为你的证书路径
+//     };
+//     https.createServer(options, app).listen(3443, () => {
+//         console.log('🔐 HTTPS 服务器运行在 https://localhost:3443');
+//     });
+// } catch (err) {
+//     console.log('ℹ️ 未启用 HTTPS（证书文件不存在或路径错误），仅提供 HTTP 服务');
+// }
