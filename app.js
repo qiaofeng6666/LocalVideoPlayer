@@ -7,6 +7,11 @@ const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ================== 空闲超时配置 ==================
+// 单位：分钟，默认 10 分钟；设置为 0 可禁用自动关闭
+const IDLE_TIMEOUT_MINUTES = parseInt(process.env.IDLE_TIMEOUT_MINUTES) || 10;
+const IDLE_TIMEOUT_MS = IDLE_TIMEOUT_MINUTES > 0 ? IDLE_TIMEOUT_MINUTES * 60 * 1000 : 0;
+
 // ================== 视频目录配置 ==================
 const VIDEO_1_FOLDER_PATH = path.resolve('D:/videos');
 const VIDEO_2_FOLDER_PATH = path.resolve('D:/videos2');
@@ -48,6 +53,57 @@ db.run(`
         console.log('✅ 日表已就绪');
     }
 });
+
+// ================== 空闲计时器管理 ==================
+let server = null;               // HTTP 服务器实例
+let idleTimer = null;           // 空闲超时定时器
+let isShuttingDown = false;     // 防止重复关闭
+
+function resetIdleTimer() {
+    if (IDLE_TIMEOUT_MS === 0) return; // 禁用自动关闭
+    if (isShuttingDown) return;        // 已关闭中不再重置
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+        console.log(`⏰ 服务器空闲超过 ${IDLE_TIMEOUT_MINUTES} 分钟，开始自动关闭...`);
+        gracefulShutdown();
+    }, IDLE_TIMEOUT_MS);
+}
+
+function gracefulShutdown() {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    if (idleTimer) {
+        clearTimeout(idleTimer);
+        idleTimer = null;
+    }
+
+    // 停止接收新连接
+    if (server) {
+        server.close(() => {
+            console.log('✅ HTTP 服务器已关闭');
+            // 关闭数据库连接
+            db.close((err) => {
+                if (err) {
+                    console.error('❌ 关闭数据库失败:', err.message);
+                } else {
+                    console.log('✅ 数据库连接已关闭');
+                }
+                // 正常退出进程
+                process.exit(0);
+            });
+        });
+
+        // 如果服务器无法在指定时间内关闭，强制退出
+        const forceExitTimeout = setTimeout(() => {
+            console.error('⚠️ 强制退出进程（关闭超时）');
+            process.exit(1);
+        }, 5000); // 5 秒超时
+        forceExitTimeout.unref(); // 避免阻止进程退出
+    } else {
+        // 如果没有 server，直接退出
+        process.exit(0);
+    }
+}
 
 // ================== IP 流量统计中间件（双写：总表 + 日表） ==================
 app.use((req, res, next) => {
@@ -108,6 +164,12 @@ app.use((req, res, next) => {
             return originalEnd.call(this, chunk, encoding, callback);
         };
     }
+    next();
+});
+
+// ================== 全局中间件：重置空闲计时器（所有请求都会触发） ==================
+app.use((req, res, next) => {
+    resetIdleTimer();
     next();
 });
 
@@ -239,16 +301,21 @@ app.use('/videos2', express.static(VIDEO_2_FOLDER_PATH, {
 
 // ================== 根路由：返回流量监控页面 ==================
 app.get('/', (req, res) => {
-    // 注意：需要将 traffic.html 放在 public 目录下
     res.sendFile(path.join(__dirname, 'public', 'traffic.html'));
 });
 
 // ================== 启动 HTTP 服务器 ==================
-app.listen(PORT, () => {
+server = app.listen(PORT, () => {
     console.log(`✅ HTTP 服务器运行在: http://localhost:${PORT}`);
     console.log(`📁 视频目录1 (videos): ${VIDEO_1_FOLDER_PATH}`);
     console.log(`📁 视频目录2 (videos2): ${VIDEO_2_FOLDER_PATH}`);
     console.log(`📊 流量统计页面: http://localhost:${PORT}/`);
+    if (IDLE_TIMEOUT_MS > 0) {
+        console.log(`⏰ 空闲超时自动关闭已启用：${IDLE_TIMEOUT_MINUTES} 分钟`);
+        resetIdleTimer(); // 启动计时器
+    } else {
+        console.log('ℹ️ 空闲超时自动关闭已禁用');
+    }
 });
 
 // ================== 可选 HTTPS 支持（注释保留） ==================
