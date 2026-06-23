@@ -1,9 +1,10 @@
 const express = require('express');
-const fs = require('fs');                // 同步方法 (用于 readFileSync)
-const fsp = fs.promises;                 // 异步方法 (用于 readdir 等)
+const fs = require('fs');
+const fsp = fs.promises;
 const path = require('path');
-const app = express();
+const sqlite3 = require('sqlite3').verbose();
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ================== 视频目录配置 ==================
@@ -13,12 +14,104 @@ const VIDEO_2_FOLDER_PATH = path.resolve('D:/videos2');
 // ================== 静态资源 ==================
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ================== 工具函数 ==================
-/**
- * 递归获取目录下所有文件的绝对路径
- * @param {string} dir 目录路径
- * @returns {Promise<string[]>} 文件路径数组
- */
+// ================== SQLite 初始化 ==================
+const DB_PATH = path.join(__dirname, 'traffic.db');
+const db = new sqlite3.Database(DB_PATH);
+
+// 创建总表（历史累计流量）
+db.run(`
+    CREATE TABLE IF NOT EXISTS ip_traffic (
+        ip TEXT PRIMARY KEY,
+        total_bytes INTEGER DEFAULT 0,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+`, (err) => {
+    if (err) {
+        console.error('❌ 创建总表失败:', err.message);
+    } else {
+        console.log('✅ 总表已就绪');
+    }
+});
+
+// 创建日表（按日期统计）
+db.run(`
+    CREATE TABLE IF NOT EXISTS ip_traffic_daily (
+        ip TEXT,
+        date TEXT,   -- 格式 YYYY-MM-DD
+        total_bytes INTEGER DEFAULT 0,
+        PRIMARY KEY (ip, date)
+    )
+`, (err) => {
+    if (err) {
+        console.error('❌ 创建日表失败:', err.message);
+    } else {
+        console.log('✅ 日表已就绪');
+    }
+});
+
+// ================== IP 流量统计中间件（双写：总表 + 日表） ==================
+app.use((req, res, next) => {
+    // 只统计视频请求（可根据需要调整）
+    if (req.path.startsWith('/videos') || req.path.startsWith('/videos2')) {
+        // 获取客户端真实 IP
+        const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const clientIp = (ip.split(',')[0] || ip).trim();
+
+        // 保存原始 end 方法
+        const originalEnd = res.end;
+        let contentLength = 0;
+
+        // 拦截 setHeader 获取 Content-Length
+        const originalSetHeader = res.setHeader;
+        res.setHeader = function(name, value) {
+            if (name.toLowerCase() === 'content-length') {
+                contentLength = parseInt(value, 10);
+            }
+            return originalSetHeader.call(this, name, value);
+        };
+
+        // 重写 end 方法
+        res.end = function(chunk, encoding, callback) {
+            // 如果没拿到 Content-Length，尝试从 chunk 计算
+            if (!contentLength && chunk) {
+                contentLength = Buffer.byteLength(chunk);
+            }
+
+            if (contentLength > 0) {
+                // 1) 更新总表
+                db.run(
+                    `INSERT INTO ip_traffic (ip, total_bytes) 
+                     VALUES (?, ?) 
+                     ON CONFLICT(ip) DO UPDATE SET 
+                        total_bytes = total_bytes + excluded.total_bytes,
+                        updated_at = CURRENT_TIMESTAMP`,
+                    [clientIp, contentLength],
+                    (err) => {
+                        if (err) console.error('总表更新失败:', err.message);
+                    }
+                );
+
+                // 2) 更新日表
+                db.run(
+                    `INSERT INTO ip_traffic_daily (ip, date, total_bytes) 
+                     VALUES (?, date('now'), ?) 
+                     ON CONFLICT(ip, date) DO UPDATE SET 
+                        total_bytes = total_bytes + excluded.total_bytes`,
+                    [clientIp, contentLength],
+                    (err) => {
+                        if (err) console.error('日表更新失败:', err.message);
+                    }
+                );
+            }
+
+            // 调用原始 end
+            return originalEnd.call(this, chunk, encoding, callback);
+        };
+    }
+    next();
+});
+
+// ================== 工具函数：递归获取目录下所有文件 ==================
 async function getVideoFiles(dir) {
     const dirents = await fsp.readdir(dir, { withFileTypes: true });
     const files = await Promise.all(
@@ -30,8 +123,7 @@ async function getVideoFiles(dir) {
     return files.flat();
 }
 
-// ================== API 路由 ==================
-// 获取 D:/videos 下的视频列表
+// ================== API 路由：视频列表 ==================
 app.get('/api/videos', async (req, res) => {
     try {
         const allFiles = await getVideoFiles(VIDEO_1_FOLDER_PATH);
@@ -39,11 +131,9 @@ app.get('/api/videos', async (req, res) => {
         const videoFilePaths = allFiles.filter(file =>
             supportedFormats.includes(path.extname(file).toLowerCase())
         );
-
         const relativePaths = videoFilePaths.map(file =>
             '/videos/' + path.relative(VIDEO_1_FOLDER_PATH, file).split(path.sep).join('/')
         );
-
         res.json(relativePaths);
     } catch (err) {
         console.error('读取 videos 目录失败:', err);
@@ -51,7 +141,6 @@ app.get('/api/videos', async (req, res) => {
     }
 });
 
-// 获取 D:/videos2 下的视频列表
 app.get('/api/videos2', async (req, res) => {
     try {
         const allFiles = await getVideoFiles(VIDEO_2_FOLDER_PATH);
@@ -59,11 +148,9 @@ app.get('/api/videos2', async (req, res) => {
         const videoFilePaths = allFiles.filter(file =>
             supportedFormats.includes(path.extname(file).toLowerCase())
         );
-
         const relativePaths = videoFilePaths.map(file =>
             '/videos2/' + path.relative(VIDEO_2_FOLDER_PATH, file).split(path.sep).join('/')
         );
-
         res.json(relativePaths);
     } catch (err) {
         console.error('读取 videos2 目录失败:', err);
@@ -71,8 +158,69 @@ app.get('/api/videos2', async (req, res) => {
     }
 });
 
+// ================== API 路由：IP 流量统计 ==================
+
+// 1. 获取历史累计流量（所有时间）
+app.get('/api/traffic/ip', (req, res) => {
+    db.all(
+        `SELECT ip, total_bytes, updated_at FROM ip_traffic ORDER BY total_bytes DESC`,
+        (err, rows) => {
+            if (err) {
+                console.error('查询总表失败:', err.message);
+                res.status(500).json({ error: '数据库查询失败' });
+                return;
+            }
+            const data = rows.map(row => ({
+                ip: row.ip,
+                bytes: row.total_bytes,
+                MB: (row.total_bytes / 1024 / 1024).toFixed(2),
+                GB: (row.total_bytes / 1024 / 1024 / 1024).toFixed(4),
+                updated_at: row.updated_at
+            }));
+            res.json({ totalIPs: data.length, data });
+        }
+    );
+});
+
+// 2. 获取今日每个 IP 的流量（用于前端弹窗和展示）
+app.get('/api/traffic/ip/today', (req, res) => {
+    db.all(
+        `SELECT ip, total_bytes FROM ip_traffic_daily WHERE date = date('now') ORDER BY total_bytes DESC`,
+        (err, rows) => {
+            if (err) {
+                console.error('查询今日流量失败:', err.message);
+                res.status(500).json({ error: '数据库查询失败' });
+                return;
+            }
+            const data = rows.map(row => ({
+                ip: row.ip,
+                bytes: row.total_bytes,
+                MB: (row.total_bytes / 1024 / 1024).toFixed(2),
+                GB: (row.total_bytes / 1024 / 1024 / 1024).toFixed(4)
+            }));
+            res.json({ data });
+        }
+    );
+});
+
+// 3. （可选）重置所有统计
+app.post('/api/traffic/reset', (req, res) => {
+    db.run('DELETE FROM ip_traffic', (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        db.run('DELETE FROM ip_traffic_daily', (err2) => {
+            if (err2) {
+                res.status(500).json({ error: err2.message });
+                return;
+            }
+            res.json({ message: '所有 IP 流量统计已重置' });
+        });
+    });
+});
+
 // ================== 静态视频文件服务 ==================
-// 提供 /videos 路由，支持 Range 请求（拖动进度条）
 app.use('/videos', express.static(VIDEO_1_FOLDER_PATH, {
     setHeaders: (res, filePath) => {
         if (path.extname(filePath) === '.mp4') {
@@ -81,7 +229,6 @@ app.use('/videos', express.static(VIDEO_1_FOLDER_PATH, {
     }
 }));
 
-// 提供 /videos2 路由，同样支持 Range 请求和缓存
 app.use('/videos2', express.static(VIDEO_2_FOLDER_PATH, {
     setHeaders: (res, filePath) => {
         if (path.extname(filePath) === '.mp4') {
@@ -90,15 +237,10 @@ app.use('/videos2', express.static(VIDEO_2_FOLDER_PATH, {
     }
 }));
 
-// ================== 根路由 ==================
+// ================== 根路由：返回流量监控页面 ==================
 app.get('/', (req, res) => {
-    res.send(`
-        <h1>🎬 视频服务器已启动</h1>
-        <ul>
-            <li><a href="/api/videos">查看 /videos 视频列表（目录1）</a></li>
-            <li><a href="/api/videos2">查看 /videos2 视频列表（目录2）</a></li>
-        </ul>
-    `);
+    // 注意：需要将 traffic.html 放在 public 目录下
+    res.sendFile(path.join(__dirname, 'public', 'traffic.html'));
 });
 
 // ================== 启动 HTTP 服务器 ==================
@@ -106,14 +248,15 @@ app.listen(PORT, () => {
     console.log(`✅ HTTP 服务器运行在: http://localhost:${PORT}`);
     console.log(`📁 视频目录1 (videos): ${VIDEO_1_FOLDER_PATH}`);
     console.log(`📁 视频目录2 (videos2): ${VIDEO_2_FOLDER_PATH}`);
+    console.log(`📊 流量统计页面: http://localhost:${PORT}/`);
 });
 
-// ================== 可选 HTTPS 支持 ==================
+// ================== 可选 HTTPS 支持（注释保留） ==================
 // try {
 //     const https = require('https');
 //     const options = {
-//         key: fs.readFileSync('./certs/private.key'),   // 请替换为你的私钥路径
-//         cert: fs.readFileSync('./certs/certificate.crt') // 请替换为你的证书路径
+//         key: fs.readFileSync('./certs/private.key'),
+//         cert: fs.readFileSync('./certs/certificate.crt')
 //     };
 //     https.createServer(options, app).listen(3443, () => {
 //         console.log('🔐 HTTPS 服务器运行在 https://localhost:3443');
