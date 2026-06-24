@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const { execFile } = require('child_process');
+const { exec } = require('child_process');
 const app = express();
 const PORT = 3001;
 
@@ -19,29 +19,29 @@ app.post('/run', (req, res) => {
         console.log('收到重复请求，已忽略（当前锁定中）。');
         return res.json({
             success: false,
-            message: '已启动过且执行成功，不再重复执行。如需重新执行，请重启服务。'
+            message: '任务已在执行中，请勿重复调用。'
         });
     }
-
+    
     // 立即锁定，防止并发
     hasExecuted = true;
     console.log('收到“我要看片”请求，开始执行预定义任务...');
 
-    // 使用 execFile 替代 exec，参数通过数组传递，安全且无需手动转义
+    // 注意：路径包含空格，用双引号括起来（已在字符串中）
     const commands = [
-        { file: 'D:\\Program Files\\LocalVideoPlayer\\startapp_auto.bat', args: [] },
-        { file: 'D:\\Program Files\\Tailscale\\tailscale-ipn.exe', args: [] },
+        '"D:\\Program Files\\LocalVideoPlayer\\startapp_auto.bat"',
+        '"D:\\Program Files\\Tailscale\\tailscale-ipn.exe"',
     ];
 
-    // 将每个命令包装成 Promise
-    const execPromises = commands.map(({ file, args }, index) => {
+    // 将每个命令包装成 Promise，使用 exec 执行
+    const execPromises = commands.map((cmd, index) => {
         return new Promise((resolve, reject) => {
-            execFile(file, args, { windowsHide: true }, (error, stdout, stderr) => {
+            exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
                 if (error) {
-                    console.error(`命令 ${index+1} (${file}) 执行失败:`, error.message);
+                    console.error(`命令 ${index+1} (${cmd}) 执行失败:`, error.message);
                     reject(error);
                 } else {
-                    console.log(`命令 ${index+1} (${file}) 执行成功:`, stdout || '(无输出)');
+                    console.log(`命令 ${index+1} (${cmd}) 执行成功:`, stdout || '(无输出)');
                     resolve({ stdout, stderr });
                 }
             });
@@ -66,7 +66,7 @@ app.post('/run', (req, res) => {
             hasExecuted = false;
         });
 
-    // 立即返回，不等待命令结束
+    // 立即返回，不阻塞
     res.json({
         success: true,
         message: '已开始执行任务，请查看服务端日志。若全部成功则锁定，否则可再次尝试。'
